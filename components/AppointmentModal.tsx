@@ -16,10 +16,11 @@ type Props = {
   onClose: () => void;
 };
 
+// Dark theme — same language as the "Kimse görmeden" (Atölye) section.
 const labelCls =
-  "font-body text-[9.5px] font-light uppercase tracking-label text-clay";
+  "font-body text-[9.5px] font-light uppercase tracking-label text-[rgba(244,239,230,0.55)]";
 const inputCls =
-  "w-full box-border rounded-none border-0 border-b border-[rgba(14,14,12,0.28)] bg-transparent px-[2px] py-[9px] font-body text-[18px] text-ink-deep outline-none transition-colors duration-[400ms] focus:border-b-gold";
+  "w-full box-border rounded-none border-0 border-b border-[rgba(244,239,230,0.25)] bg-transparent px-[2px] py-[9px] font-body text-[18px] text-paper outline-none transition-colors duration-[400ms] focus:border-b-gold placeholder:text-[rgba(244,239,230,0.3)]";
 
 export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
   const [name, setName] = useState("");
@@ -74,14 +75,14 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
           aria-modal="true"
           aria-label="Randevu al"
         >
-          {/* Overlay */}
+          {/* Overlay — darker + blur so the panel reads as a floating card */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: EASE }}
             onClick={onClose}
-            className="absolute inset-0 bg-[rgba(14,14,12,0.55)] backdrop-blur-[6px]"
+            className="absolute inset-0 bg-[rgba(8,8,7,0.72)] backdrop-blur-[8px]"
           />
 
           {/* Panel — balloons from the trigger position */}
@@ -90,14 +91,18 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
             animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
             exit={{ opacity: 0, scale: 0.2, x: dx, y: dy }}
             transition={{ duration: 0.5, ease: EASE }}
-            className="relative z-[1] flex h-[100dvh] w-full flex-col overflow-y-auto bg-paper px-6 pb-10 pt-6 sm:h-auto sm:max-h-[90vh] sm:w-[520px] sm:rounded-[14px] sm:px-8 sm:py-9 sm:shadow-[0_30px_80px_-20px_rgba(14,14,12,0.5)]"
+            style={{
+              background: "linear-gradient(180deg,#16130D 0%,#0E0E0C 100%)",
+              boxShadow: "0 40px 100px -20px rgba(0,0,0,0.7)",
+            }}
+            className="relative z-[1] flex h-[100dvh] w-full flex-col overflow-y-auto px-6 pb-10 pt-6 text-paper sm:h-auto sm:max-h-[90vh] sm:w-[520px] sm:rounded-[16px] sm:border sm:border-[rgba(244,239,230,0.12)] sm:px-8 sm:py-9"
           >
             {/* Close */}
             <button
               type="button"
               onClick={onClose}
               aria-label="Kapat"
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(14,14,12,0.18)] text-[18px] text-ink-soft transition-colors hover:border-gold hover:text-clay sm:right-5 sm:top-5"
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(244,239,230,0.2)] text-[18px] text-[rgba(244,239,230,0.7)] transition-colors hover:border-gold hover:text-gold sm:right-5 sm:top-5"
             >
               ×
             </button>
@@ -109,22 +114,24 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
               transition={{ duration: 0.4, ease: EASE, delay: 0.16 }}
             >
               {done ? (
-                <div className="animate-fade-up rounded-[6px] border border-[rgba(184,149,106,0.45)] bg-paper-cool px-[30px] py-9 text-center">
-                  <div className="font-body text-[10px] font-light uppercase tracking-label text-clay">
+                <div className="animate-fade-up rounded-[6px] border border-[rgba(184,149,106,0.45)] bg-[rgba(244,239,230,0.04)] px-[30px] py-9 text-center">
+                  <div className="font-body text-[10px] font-light uppercase tracking-label text-gold">
                     Randevu isteğin alındı
                   </div>
-                  <p className="mx-auto mt-[14px] max-w-[34ch] font-body text-[clamp(19px,2vw,24px)] font-normal leading-[1.35]">
+                  <p className="mx-auto mt-[14px] max-w-[34ch] font-body text-[clamp(19px,2vw,24px)] font-normal leading-[1.35] text-paper">
                     Randevunuz işleme alındı. Onaylandığında size bilgi vereceğiz.
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="mb-1 h-px w-[30px] bg-gold" />
-                  <div className={labelCls}>Randevu</div>
-                  <h2 className="mt-3 font-display text-[clamp(26px,4vw,34px)] font-[380] leading-[1.08] tracking-tight">
+                  <div className="font-body text-[9.5px] font-light uppercase tracking-label text-gold">
+                    Randevu
+                  </div>
+                  <h2 className="mt-3 font-display text-[clamp(26px,4vw,34px)] font-[380] leading-[1.08] tracking-tight text-paper">
                     Sana bir saat ayıralım.
                   </h2>
-                  <p className="mt-3 font-body text-[15px] leading-[1.6] text-[rgba(28,27,23,0.7)]">
+                  <p className="mt-3 font-body text-[15px] leading-[1.6] text-[rgba(244,239,230,0.72)]">
                     Birkaç bilgi bırak, uygun gününü ve saatini seç. Onayı biz
                     veririz.
                   </p>
@@ -150,7 +157,7 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
                         inputMode="numeric"
                         autoComplete="tel"
                         placeholder="05XX XXX XX XX"
-                        className={`${inputCls} placeholder:text-[rgba(28,27,23,0.3)]`}
+                        className={inputCls}
                       />
                     </label>
 
@@ -168,7 +175,7 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
                     <div className="flex flex-col gap-[10px]">
                       <span className={labelCls}>Saat</span>
                       {!date ? (
-                        <p className="font-accent text-[15px] italic text-[rgba(28,27,23,0.5)]">
+                        <p className="font-accent text-[15px] italic text-[rgba(244,239,230,0.5)]">
                           Önce bir gün seçin.
                         </p>
                       ) : (
@@ -191,10 +198,10 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
                                 aria-pressed={selected}
                                 className={`rounded-full border px-[16px] py-[9px] font-body text-[13px] tracking-[0.06em] transition-all duration-[300ms] ease-smooth ${
                                   full
-                                    ? "cursor-not-allowed border-dashed border-[rgba(14,14,12,0.18)] text-[rgba(28,27,23,0.35)] line-through"
+                                    ? "cursor-not-allowed border-dashed border-[rgba(244,239,230,0.15)] text-[rgba(244,239,230,0.28)] line-through"
                                     : selected
-                                      ? "border-ink-deep bg-ink-deep text-paper"
-                                      : "border-[rgba(14,14,12,0.28)] text-ink-soft hover:border-gold hover:text-clay"
+                                      ? "border-gold bg-gold text-ink-deep"
+                                      : "border-[rgba(244,239,230,0.28)] text-paper hover:border-gold hover:text-gold"
                                 }`}
                               >
                                 {h}
@@ -208,7 +215,7 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
                     <button
                       type="submit"
                       disabled={!canSubmit}
-                      className="mt-1 inline-flex items-center justify-center gap-[10px] self-start rounded-full bg-ink-deep px-7 pb-4 pt-[17px] font-body text-[10.5px] font-light uppercase tracking-label text-paper transition-all duration-500 ease-smooth enabled:hover:bg-clay disabled:cursor-not-allowed disabled:opacity-35"
+                      className="mt-1 inline-flex items-center justify-center gap-[10px] self-start rounded-full bg-paper px-7 pb-4 pt-[17px] font-body text-[10.5px] font-light uppercase tracking-label text-ink-deep transition-all duration-500 ease-smooth enabled:hover:bg-gold disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       Randevuyu oluştur{" "}
                       <span className="font-accent text-[15px] tracking-normal">

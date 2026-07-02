@@ -56,7 +56,7 @@ export default function Calendar({ value, onSelect }: Props) {
   const todayIso = toIso(today.getFullYear(), today.getMonth(), today.getDate());
 
   return (
-    <div className="rounded-[8px] border border-[rgba(35,28,20,0.1)] bg-card-cream p-4 sm:p-5">
+    <div className="rounded-[10px] border border-[rgba(244,239,230,0.1)] bg-[rgba(244,239,230,0.03)] p-4 sm:p-5">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <button
@@ -64,15 +64,15 @@ export default function Calendar({ value, onSelect }: Props) {
           onClick={() => shift(-1)}
           disabled={prevDisabled}
           aria-label="Önceki ay"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(138,111,79,0.35)] text-[16px] text-ink-soft transition-colors disabled:cursor-not-allowed disabled:opacity-25 enabled:hover:border-gold enabled:hover:text-clay"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(244,239,230,0.22)] text-[16px] text-paper transition-colors disabled:cursor-not-allowed disabled:opacity-20 enabled:hover:border-gold enabled:hover:text-gold"
         >
           ‹
         </button>
         <div className="flex flex-col items-center leading-none">
-          <span className="font-display text-[20px] font-[440] text-ink-deep">
+          <span className="font-display text-[20px] font-[440] text-paper">
             {MONTHS[view.month]}
           </span>
-          <span className="mt-[3px] font-body text-[10px] font-light tracking-label text-[rgba(138,111,79,0.7)]">
+          <span className="mt-[3px] font-body text-[10px] font-light tracking-label text-[rgba(244,239,230,0.5)]">
             {view.year}
           </span>
         </div>
@@ -81,18 +81,18 @@ export default function Calendar({ value, onSelect }: Props) {
           onClick={() => shift(1)}
           disabled={nextDisabled}
           aria-label="Sonraki ay"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(138,111,79,0.35)] text-[16px] text-ink-soft transition-colors disabled:cursor-not-allowed disabled:opacity-25 enabled:hover:border-gold enabled:hover:text-clay"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(244,239,230,0.22)] text-[16px] text-paper transition-colors disabled:cursor-not-allowed disabled:opacity-20 enabled:hover:border-gold enabled:hover:text-gold"
         >
           ›
         </button>
       </div>
 
       {/* Weekday labels */}
-      <div className="mb-1 grid grid-cols-7">
+      <div className="mb-1 grid grid-cols-7 border-b border-[rgba(244,239,230,0.08)]">
         {WEEKDAYS.map((w) => (
           <div
             key={w}
-            className="pb-2 text-center font-body text-[9px] font-light uppercase tracking-label text-clay"
+            className="pb-2 text-center font-body text-[9px] font-light uppercase tracking-label text-[rgba(244,239,230,0.5)]"
           >
             {w}
           </div>
@@ -119,10 +119,10 @@ export default function Calendar({ value, onSelect }: Props) {
                 aria-label={`${d} ${MONTHS[view.month]} ${view.year}`}
                 className={`relative flex h-[38px] w-[38px] items-center justify-center rounded-full font-display text-[16px] transition-colors ${
                   disabled
-                    ? "cursor-not-allowed text-[rgba(28,27,23,0.25)]"
+                    ? "cursor-not-allowed text-[rgba(244,239,230,0.22)]"
                     : selected
-                      ? "bg-gold text-white"
-                      : "text-ink-deep hover:bg-[rgba(184,149,106,0.16)]"
+                      ? "bg-gold text-ink-deep"
+                      : "text-paper hover:bg-[rgba(244,239,230,0.08)]"
                 }`}
               >
                 {d}
