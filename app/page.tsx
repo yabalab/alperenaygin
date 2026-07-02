@@ -10,6 +10,8 @@ import Studio from "@/components/Studio";
 import Master from "@/components/Master";
 import Faq from "@/components/Faq";
 import Contact from "@/components/Contact";
+import Footer from "@/components/Footer";
+import RandevuChip from "@/components/RandevuChip";
 
 export default function Home() {
   return (
@@ -34,6 +36,8 @@ export default function Home() {
       <Master />
       <Faq />
       <Contact />
+      <Footer />
+      <RandevuChip />
     </div>
   );
 }

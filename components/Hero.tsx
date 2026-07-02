@@ -19,7 +19,10 @@ const reveal: Variants = {
 
 export default function Hero() {
   return (
-    <section className="relative flex flex-col overflow-hidden desk:grid desk:max-h-[960px] desk:min-h-[calc(100svh-64px)] desk:grid-cols-2">
+    <section
+      id="hero"
+      className="relative flex flex-col overflow-hidden desk:grid desk:max-h-[960px] desk:min-h-[calc(100svh-64px)] desk:grid-cols-2"
+    >
       <BeforeAfterSlider
         afterSrc="/images/salon-sacli.png"
         afterAlt="Saç sistemi uygulanmış hali — aynı adam, saçlı"
