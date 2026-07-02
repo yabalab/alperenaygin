@@ -1,9 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type PointerEvent, type KeyboardEvent } from "react";
+import {
+  useRef,
+  useState,
+  type PointerEvent,
+  type KeyboardEvent,
+} from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
+// Auto (scroll-driven) sweep range for the handle.
+const START = 20;
+const END = 80;
 
 type Props = {
   /** Image shown on the right / underneath (the "after" state). */
@@ -34,12 +43,68 @@ export default function BeforeAfterSlider({
   const boxRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [userTook, setUserTook] = useState(false);
 
-  // Intro reveal: handle glides from the edge to 70% after a short beat.
-  useEffect(() => {
-    const t = setTimeout(() => setPos(70), 750);
-    return () => clearTimeout(t);
-  }, []);
+  // Refs for the GSAP-driven auto behaviour (read inside GSAP callbacks).
+  const userTookRef = useRef(false);
+  const introDoneRef = useRef(false);
+  const introTweenRef = useRef<gsap.core.Tween | null>(null);
+  const scrollTweenRef = useRef<gsap.core.Tween | null>(null);
+
+  // The moment the user touches the slider (drag or keyboard), auto is off for
+  // good — the slider is theirs.
+  const takeControl = () => {
+    if (userTookRef.current) return;
+    userTookRef.current = true;
+    setUserTook(true);
+    introTweenRef.current?.kill();
+    scrollTweenRef.current?.scrollTrigger?.kill();
+    scrollTweenRef.current?.kill();
+  };
+
+  // Auto-slide: intro glide (0→START) then scroll-scrubbed sweep (START→END)
+  // while the hero is on screen. Skipped for reduced-motion.
+  useGSAP(
+    () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setPos(50); // static, both halves visible; slider still draggable
+        return;
+      }
+
+      const intro = { p: 0 };
+      introTweenRef.current = gsap.to(intro, {
+        p: START,
+        duration: 0.9,
+        ease: "power3.out",
+        delay: 0.25,
+        onUpdate: () => {
+          if (!userTookRef.current) setPos(intro.p);
+        },
+        onComplete: () => {
+          introDoneRef.current = true;
+        },
+      });
+
+      const scroll = { p: 0 };
+      scrollTweenRef.current = gsap.to(scroll, {
+        p: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: boxRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: 0.5, // ties to scroll, smoothed so it never jitters
+        },
+        onUpdate: () => {
+          // User priority + don't fight the intro; stop once hero has left
+          // (ScrollTrigger clamps progress outside its range on its own).
+          if (userTookRef.current || !introDoneRef.current) return;
+          setPos(START + (END - START) * scroll.p);
+        },
+      });
+    },
+    { scope: boxRef }
+  );
 
   const posFrom = (clientX: number) => {
     const box = boxRef.current;
@@ -50,6 +115,7 @@ export default function BeforeAfterSlider({
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("a")) return;
+    takeControl();
     e.preventDefault();
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -66,14 +132,18 @@ export default function BeforeAfterSlider({
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    takeControl();
     e.preventDefault();
     const d = e.key === "ArrowLeft" ? -4 : 4;
     setPos((p) => Math.max(2, Math.min(98, p + d)));
   };
 
   const clipRight = 100 - pos;
-  const clipTrans = dragging ? "none" : `clip-path 1.5s ${EASE}`;
-  const leftTrans = dragging ? "none" : `left 1.5s ${EASE}`;
+  // No CSS transition while auto-driving (GSAP scrub already smooths) or while
+  // dragging; once the user owns it, keyboard nudges ease over 1.5s.
+  const useTrans = userTook && !dragging;
+  const clipTrans = useTrans ? `clip-path 1.5s ${EASE}` : "none";
+  const leftTrans = useTrans ? `left 1.5s ${EASE}` : "none";
 
   return (
     <div
