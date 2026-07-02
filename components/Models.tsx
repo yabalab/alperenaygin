@@ -53,8 +53,8 @@ export default function Models() {
         <div className="mt-[clamp(36px,5vw,56px)] grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-[clamp(20px,3vw,32px)]">
           {CARDS.map((c) => (
             <motion.article
-              {...revealProps}
               key={c.num}
+              {...revealProps}
               className="flex flex-col overflow-hidden rounded-[3px] border border-[rgba(35,28,20,0.08)] bg-card-cream"
             >
               <div className="flex items-center justify-center bg-card-cream px-10 pb-[34px] pt-10">

@@ -42,10 +42,11 @@ export default function Header() {
           <Image
             src="/images/logo-aa.png"
             alt="Alperen Aygın Hair Studio"
-            width={180}
-            height={52}
+            width={1179}
+            height={1091}
             priority
-            className="block h-[52px] w-auto mix-blend-multiply"
+            className="block mix-blend-multiply"
+            style={{ height: 52, width: "auto" }}
           />
         </a>
 

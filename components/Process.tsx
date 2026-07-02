@@ -51,8 +51,8 @@ export default function Process() {
         <div className="mt-[clamp(36px,5vw,60px)] grid grid-cols-[repeat(auto-fit,minmax(min(100%,230px),1fr))] gap-[clamp(24px,3vw,36px)]">
           {STEPS.map((s) => (
             <motion.div
-              {...revealProps}
               key={s.num}
+              {...revealProps}
               className={`border-t pt-5 ${
                 s.gold ? "border-gold" : "border-[rgba(14,14,12,0.14)]"
               }`}
