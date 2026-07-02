@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
+import MaskReveal from "./MaskReveal";
 
 const WA = "https://wa.me/905354838997";
 const TEL = "tel:+905354838997";
@@ -56,9 +57,9 @@ export default function Contact() {
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
             İletişim &amp; Randevu
           </div>
-          <h2 className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
+          <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
             Bir saatlik bir buluşma.
-          </h2>
+          </MaskReveal>
           <p className="mt-5 font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.7] text-[rgba(28,27,23,0.78)] [text-wrap:pretty]">
             İstersen formu doldur, istersen WhatsApp&apos;tan yaz, istersen ara.
             Üçü de sana ulaşır.

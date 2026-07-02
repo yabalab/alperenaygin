@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import ScrollFillText from "./ScrollFillText";
+import MaskReveal from "./MaskReveal";
 
 // The three reassurance points, each with the reference's exact inline SVG.
 const POINTS = [
@@ -69,9 +70,9 @@ export default function WhatIsIt() {
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
             Saç Sistemi
           </div>
-          <h2 className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
+          <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
             Protez saç nedir?
-          </h2>
+          </MaskReveal>
           <p className="mt-[22px] max-w-[46ch] font-body text-[clamp(17.5px,1.4vw,20px)] leading-[1.7] text-[rgba(28,27,23,0.82)] [text-wrap:pretty]">
             Saç kaybı yaşadığın bölgeye, kendi saç yapına birebir uyacak şekilde
             hazırlanmış bir ünite. Medikal sabitleyicilerle yerine oturur. Kendi

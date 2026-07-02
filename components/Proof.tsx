@@ -11,6 +11,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
 import ProofCard from "./ProofCard";
 import { PROOF_ITEMS } from "@/lib/proof-items";
+import MaskReveal from "./MaskReveal";
 
 const IG_URL = "https://instagram.com/alperenayginhairstudio";
 
@@ -79,9 +80,9 @@ export default function Proof() {
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
             Uygulamalarımız
           </div>
-          <h2 className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
+          <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
             Öncesi ve sonrası
-          </h2>
+          </MaskReveal>
           <p className="mt-5 font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.7] text-[rgba(28,27,23,0.78)] [text-wrap:pretty]">
             Aşağıdakiler gerçek. Kadraj her zaman kusursuz değil — çünkü bunlar
             stüdyo değil, atölye.

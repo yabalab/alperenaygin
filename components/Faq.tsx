@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
+import MaskReveal from "./MaskReveal";
 
 // Questions & answers verbatim from the reference (faqData in dist/index.html).
 const FAQS = [
@@ -55,9 +56,9 @@ export default function Faq() {
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
             Sık Sorulanlar
           </div>
-          <h2 className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
+          <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
             Aklındakiler.
-          </h2>
+          </MaskReveal>
         </motion.div>
 
         <motion.div

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
+import MaskReveal from "./MaskReveal";
 
 export default function Master() {
   return (
@@ -44,9 +45,9 @@ export default function Master() {
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
             Usta
           </div>
-          <h2 className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
+          <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
             İşi yapan el.
-          </h2>
+          </MaskReveal>
           <blockquote className="m-0 mt-[26px] p-0">
             <p className="m-0 max-w-[44ch] font-body text-[clamp(18px,1.6vw,22px)] leading-[1.7] text-[rgba(28,27,23,0.82)] [text-wrap:pretty]">
               {"[X] yıldır aynı işi yapıyorum: Serdivan'da, küçük bir atölyede, tek tek."}

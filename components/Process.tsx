@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
+import MaskReveal from "./MaskReveal";
 
 const STEPS = [
   {
@@ -43,9 +44,9 @@ export default function Process() {
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
             Süreç
           </div>
-          <h2 className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
+          <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
             Dört adım. Bir öğleden sonra.
-          </h2>
+          </MaskReveal>
         </motion.div>
 
         <div className="mt-[clamp(36px,5vw,60px)] grid grid-cols-[repeat(auto-fit,minmax(min(100%,230px),1fr))] gap-[clamp(24px,3vw,36px)]">

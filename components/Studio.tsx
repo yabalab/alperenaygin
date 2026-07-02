@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
+import MaskReveal from "./MaskReveal";
 
 const POINTS = [
   {
@@ -42,9 +43,9 @@ export default function Studio() {
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-gold">
             Mekan &amp; Gizlilik
           </div>
-          <h2 className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight text-paper [text-wrap:balance]">
+          <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight text-paper [text-wrap:balance]">
             Kimse görmeden.
-          </h2>
+          </MaskReveal>
           <p className="mt-[22px] max-w-[48ch] font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.75] text-[rgba(244,239,230,0.78)] [text-wrap:pretty]">
             Serdivan&apos;daki yeni atölyemiz daha büyük ve ayrı odalı. Randevun
             senin — kapalı bir odada, tek tek ilgileniriz. İstersen kimseyle
