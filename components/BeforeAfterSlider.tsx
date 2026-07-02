@@ -10,10 +10,12 @@ import {
 import { gsap, useGSAP } from "@/lib/gsap";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
-// Auto (scroll-driven) sweep range for the handle: starts at 60% on load and
-// drifts to 40% as you scroll (right→left).
-const START = 60;
+// Auto (scroll-driven) sweep range for the handle: starts at 65% on load and
+// drifts to 40% (right→left) over a short early scroll, not the whole hero.
+const START = 65;
 const END = 40;
+// Scroll distance over which the sweep completes (hero is still on screen).
+const SWEEP_PX = 240;
 
 type Props = {
   /** Image shown on the right / underneath (the "after" state). */
@@ -93,8 +95,8 @@ export default function BeforeAfterSlider({
         scrollTrigger: {
           trigger: boxRef.current,
           start: "top top",
-          end: "bottom top",
-          scrub: 0.5, // ties to scroll, smoothed so it never jitters
+          end: `top+=${SWEEP_PX} top`, // finishes early, hero still visible
+          scrub: 0.5, // ties to scroll, smoothed so it never jitters (no snap)
         },
         onUpdate: () => {
           // User priority + don't fight the intro; stop once hero has left
