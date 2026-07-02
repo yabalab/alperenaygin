@@ -7,6 +7,7 @@ import InstagramMarquee from "@/components/InstagramMarquee";
 import Models from "@/components/Models";
 import Process from "@/components/Process";
 import Studio from "@/components/Studio";
+import Master from "@/components/Master";
 
 export default function Home() {
   return (
@@ -28,6 +29,7 @@ export default function Home() {
       <Models />
       <Process />
       <Studio />
+      <Master />
     </div>
   );
 }
