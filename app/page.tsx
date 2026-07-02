@@ -4,6 +4,7 @@ import TrustStrip from "@/components/TrustStrip";
 import WhatIsIt from "@/components/WhatIsIt";
 import Proof from "@/components/Proof";
 import InstagramMarquee from "@/components/InstagramMarquee";
+import Models from "@/components/Models";
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
       <WhatIsIt />
       <Proof />
       <InstagramMarquee />
+      <Models />
     </div>
   );
 }
