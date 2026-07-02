@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useAppointmentModal } from "./AppointmentModalProvider";
 
 const NAV_LINKS = [
   { href: "#modeller", label: "Modeller" },
@@ -15,6 +16,7 @@ const PHONE = "+905354838997";
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { openFrom } = useAppointmentModal();
 
   // Reference: header background firms up after 8px of scroll (or when menu open).
   useEffect(() => {
@@ -64,22 +66,24 @@ export default function Header() {
               {l.label}
             </a>
           ))}
-          <a
-            href="#randevu"
-            className="inline-flex items-center rounded-full bg-ink-deep px-[18px] pb-[10px] pt-[11px] font-body text-[9.5px] font-light uppercase tracking-label text-paper transition-colors duration-500 ease-smooth hover:bg-clay"
+          <button
+            type="button"
+            onClick={openFrom}
+            className="inline-flex cursor-pointer items-center rounded-full border-none bg-ink-deep px-[18px] pb-[10px] pt-[11px] font-body text-[9.5px] font-light uppercase tracking-label text-paper transition-colors duration-500 ease-smooth hover:bg-clay"
           >
             Randevu
-          </a>
+          </button>
         </nav>
 
         {/* Mobile controls */}
         <div className="flex items-center gap-[10px] desk:hidden">
-          <a
-            href="#randevu"
-            className="inline-flex items-center rounded-full bg-ink-deep px-[15px] pb-[9px] pt-[10px] font-body text-[9px] font-light uppercase tracking-label text-paper"
+          <button
+            type="button"
+            onClick={openFrom}
+            className="inline-flex cursor-pointer items-center rounded-full border-none bg-ink-deep px-[15px] pb-[9px] pt-[10px] font-body text-[9px] font-light uppercase tracking-label text-paper"
           >
             Randevu
-          </a>
+          </button>
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}

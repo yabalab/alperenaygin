@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { archivo, fraunces, instrumentSerif } from "./fonts";
+import AppointmentModalProvider from "@/components/AppointmentModalProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +19,9 @@ export default function RootLayout({
       lang="tr"
       className={`${fraunces.variable} ${instrumentSerif.variable} ${archivo.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <AppointmentModalProvider>{children}</AppointmentModalProvider>
+      </body>
     </html>
   );
 }
