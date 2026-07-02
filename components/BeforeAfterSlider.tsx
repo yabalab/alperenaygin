@@ -10,9 +10,10 @@ import {
 import { gsap, useGSAP } from "@/lib/gsap";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
-// Auto (scroll-driven) sweep range for the handle.
-const START = 20;
-const END = 80;
+// Auto (scroll-driven) sweep range for the handle: starts at 60% on load and
+// drifts to 40% as you scroll (right→left).
+const START = 60;
+const END = 40;
 
 type Props = {
   /** Image shown on the right / underneath (the "after" state). */
