@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useAppointmentModal } from "./AppointmentModalProvider";
+
+const MORPH = { layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } };
 
 const NAV_LINKS = [
   { href: "#modeller", label: "Modeller" },
@@ -16,7 +19,7 @@ const PHONE = "+905354838997";
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { openFrom } = useAppointmentModal();
+  const { open } = useAppointmentModal();
 
   // Reference: header background firms up after 8px of scroll (or when menu open).
   useEffect(() => {
@@ -66,24 +69,32 @@ export default function Header() {
               {l.label}
             </a>
           ))}
-          <button
+          <motion.button
             type="button"
-            onClick={openFrom}
+            layoutId="randevu-header-desk"
+            transition={MORPH}
+            onClick={() => open("randevu-header-desk")}
             className="inline-flex cursor-pointer items-center rounded-full border-none bg-ink-deep px-[18px] pb-[10px] pt-[11px] font-body text-[9.5px] font-light uppercase tracking-label text-paper transition-colors duration-500 ease-smooth hover:bg-clay"
           >
-            Randevu
-          </button>
+            <motion.span layoutId="randevu-header-desk-label" transition={MORPH}>
+              Randevu
+            </motion.span>
+          </motion.button>
         </nav>
 
         {/* Mobile controls */}
         <div className="flex items-center gap-[10px] desk:hidden">
-          <button
+          <motion.button
             type="button"
-            onClick={openFrom}
+            layoutId="randevu-header-mobile"
+            transition={MORPH}
+            onClick={() => open("randevu-header-mobile")}
             className="inline-flex cursor-pointer items-center rounded-full border-none bg-ink-deep px-[15px] pb-[9px] pt-[10px] font-body text-[9px] font-light uppercase tracking-label text-paper"
           >
-            Randevu
-          </button>
+            <motion.span layoutId="randevu-header-mobile-label" transition={MORPH}>
+              Randevu
+            </motion.span>
+          </motion.button>
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}

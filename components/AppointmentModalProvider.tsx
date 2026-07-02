@@ -6,16 +6,19 @@ import {
   useContext,
   useState,
   type ReactNode,
-  type MouseEvent,
 } from "react";
+import { LayoutGroup } from "framer-motion";
 import AppointmentModal from "./AppointmentModal";
 
-type Origin = { x: number; y: number };
-
 type Ctx = {
-  /** Open the modal, ballooning from the clicked element's centre. */
-  openFrom: (e: MouseEvent<HTMLElement>) => void;
+  /**
+   * Open the modal. `source` is the layoutId of the clicked trigger — the
+   * button with that layoutId physically morphs into the modal panel.
+   */
+  open: (source: string) => void;
   close: () => void;
+  /** The layoutId currently driving the morph (null when closed). */
+  activeSource: string | null;
 };
 
 const ModalCtx = createContext<Ctx | null>(null);
@@ -35,21 +38,19 @@ export default function AppointmentModalProvider({
 }: {
   children: ReactNode;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [origin, setOrigin] = useState<Origin>({ x: 0, y: 0 });
+  const [source, setSource] = useState<string | null>(null);
 
-  const openFrom = useCallback((e: MouseEvent<HTMLElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    setOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-    setIsOpen(true);
-  }, []);
-
-  const close = useCallback(() => setIsOpen(false), []);
+  const open = useCallback((s: string) => setSource(s), []);
+  const close = useCallback(() => setSource(null), []);
 
   return (
-    <ModalCtx.Provider value={{ openFrom, close }}>
-      {children}
-      <AppointmentModal isOpen={isOpen} origin={origin} onClose={close} />
+    <ModalCtx.Provider value={{ open, close, activeSource: source }}>
+      {/* LayoutGroup lets the triggers (deep in `children`) and the modal panel
+          share layoutIds so the button can morph into the panel. */}
+      <LayoutGroup>
+        {children}
+        <AppointmentModal source={source} onClose={close} />
+      </LayoutGroup>
     </ModalCtx.Provider>
   );
 }

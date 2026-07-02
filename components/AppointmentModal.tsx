@@ -7,12 +7,11 @@ import { formatTrPhone, isValidTrPhone, sanitizeTrPhone } from "@/lib/phone";
 import { SLOT_HOURS, getBookedSlots } from "@/lib/availability";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-
-type Origin = { x: number; y: number };
+const MORPH = { layout: { duration: 0.5, ease: EASE } };
 
 type Props = {
-  isOpen: boolean;
-  origin: Origin;
+  /** layoutId of the trigger that opened the modal (null = closed). */
+  source: string | null;
   onClose: () => void;
 };
 
@@ -22,12 +21,13 @@ const labelCls =
 const inputCls =
   "w-full box-border rounded-none border-0 border-b border-[rgba(244,239,230,0.25)] bg-transparent px-[2px] py-[9px] font-body text-[18px] text-paper outline-none transition-colors duration-[400ms] focus:border-b-gold placeholder:text-[rgba(244,239,230,0.3)]";
 
-export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
+export default function AppointmentModal({ source, onClose }: Props) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState(""); // raw digits
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [closing, setClosing] = useState(false);
 
   const reset = () => {
     setName("");
@@ -35,13 +35,21 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
     setDate(null);
     setTime(null);
     setDone(false);
+    setClosing(false);
+  };
+
+  // Two-phase close: fade the content out first, then unmount so the panel
+  // morphs back to the button over cleared space (no scale distortion).
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(onClose, 200);
   };
 
   // ESC to close + lock background scroll while open.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!source) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -50,7 +58,8 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [isOpen, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source]);
 
   const booked = date ? getBookedSlots(date) : [];
   const canSubmit =
@@ -62,59 +71,70 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
     setDone(true); // NOTE: no backend — fake success (backend track handles this).
   };
 
-  // Balloon origin: offset from viewport centre to the clicked trigger.
-  const dx = typeof window !== "undefined" ? origin.x - window.innerWidth / 2 : 0;
-  const dy = typeof window !== "undefined" ? origin.y - window.innerHeight / 2 : 0;
+  const contentVisible = !!source && !closing;
 
   return (
     <AnimatePresence onExitComplete={reset}>
-      {isOpen && (
-        <div
+      {source && (
+        <motion.div
+          key="appointment-modal"
           className="fixed inset-0 z-[100] flex items-stretch justify-center sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-label="Randevu al"
         >
-          {/* Overlay — darker + blur so the panel reads as a floating card */}
+          {/* Overlay — darker + blur; its exit keeps the subtree alive for the
+              morph-back. */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: EASE }}
-            onClick={onClose}
+            transition={{ duration: 0.45, ease: EASE }}
+            onClick={handleClose}
             className="absolute inset-0 bg-[rgba(8,8,7,0.72)] backdrop-blur-[8px]"
           />
 
-          {/* Panel — balloons from the trigger position */}
+          {/* Panel — the clicked button physically grows into this (layoutId). */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.2, x: dx, y: dy }}
-            animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, scale: 0.2, x: dx, y: dy }}
-            transition={{ duration: 0.5, ease: EASE }}
+            layoutId={source}
+            transition={MORPH}
             style={{
               background: "linear-gradient(180deg,#16130D 0%,#0E0E0C 100%)",
               boxShadow: "0 40px 100px -20px rgba(0,0,0,0.7)",
             }}
             className="relative z-[1] flex h-[100dvh] w-full flex-col overflow-y-auto px-6 pb-10 pt-6 text-paper sm:h-auto sm:max-h-[90vh] sm:w-[520px] sm:rounded-[16px] sm:border sm:border-[rgba(244,239,230,0.12)] sm:px-8 sm:py-9"
           >
-            {/* Close */}
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Kapat"
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(244,239,230,0.2)] text-[18px] text-[rgba(244,239,230,0.7)] transition-colors hover:border-gold hover:text-gold sm:right-5 sm:top-5"
+            {/* The button's label grows into this eyebrow (shared layoutId). */}
+            <motion.span
+              layoutId={`${source}-label`}
+              transition={MORPH}
+              className="inline-block self-start font-body text-[9.5px] font-light uppercase tracking-label text-gold"
             >
-              ×
-            </button>
+              Randevu
+            </motion.span>
 
-            {/* Content fades in after the panel */}
+            {/* Everything else fades in after the panel has grown. */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, ease: EASE, delay: 0.16 }}
+              animate={{ opacity: contentVisible ? 1 : 0 }}
+              transition={{
+                duration: contentVisible ? 0.4 : 0.15,
+                delay: contentVisible ? 0.24 : 0,
+                ease: EASE,
+              }}
             >
+              {/* Close */}
+              <button
+                type="button"
+                onClick={handleClose}
+                aria-label="Kapat"
+                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(244,239,230,0.2)] text-[18px] text-[rgba(244,239,230,0.7)] transition-colors hover:border-gold hover:text-gold sm:right-5 sm:top-5"
+              >
+                ×
+              </button>
+
               {done ? (
-                <div className="animate-fade-up rounded-[6px] border border-[rgba(184,149,106,0.45)] bg-[rgba(244,239,230,0.04)] px-[30px] py-9 text-center">
+                <div className="mt-4 rounded-[6px] border border-[rgba(184,149,106,0.45)] bg-[rgba(244,239,230,0.04)] px-[30px] py-9 text-center">
                   <div className="font-body text-[10px] font-light uppercase tracking-label text-gold">
                     Randevu isteğin alındı
                   </div>
@@ -124,11 +144,8 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
                 </div>
               ) : (
                 <>
-                  <div className="mb-1 h-px w-[30px] bg-gold" />
-                  <div className="font-body text-[9.5px] font-light uppercase tracking-label text-gold">
-                    Randevu
-                  </div>
-                  <h2 className="mt-3 font-display text-[clamp(26px,4vw,34px)] font-[380] leading-[1.08] tracking-tight text-paper">
+                  <div className="mb-3 mt-2 h-px w-[30px] bg-gold" />
+                  <h2 className="font-display text-[clamp(26px,4vw,34px)] font-[380] leading-[1.08] tracking-tight text-paper">
                     Sana bir saat ayıralım.
                   </h2>
                   <p className="mt-3 font-body text-[15px] leading-[1.6] text-[rgba(244,239,230,0.72)]">
@@ -227,7 +244,7 @@ export default function AppointmentModal({ isOpen, origin, onClose }: Props) {
               )}
             </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
