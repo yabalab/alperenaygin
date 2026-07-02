@@ -1,20 +1,79 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useRef, type MouseEvent } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperClass } from "swiper";
+import "swiper/css";
+import { Fancybox } from "@fancyapps/ui";
+import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import { motion } from "framer-motion";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
+import ProofCard from "./ProofCard";
+import { PROOF_ITEMS } from "@/lib/proof-items";
 
 const IG_URL = "https://instagram.com/alperenayginhairstudio";
 
+// Lightbox gallery: before + after of every item, in order.
+const GALLERY = PROOF_ITEMS.flatMap((it) => [
+  { src: it.before, type: "image" as const, alt: it.beforeAlt },
+  { src: it.after, type: "image" as const, alt: it.afterAlt },
+]);
+
 export default function Proof() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const swiperRef = useRef<SwiperClass | null>(null);
+  const draggingRef = useRef(false);
+
+  // Scroll drift (GSAP ScrollTrigger, scrubbed): the two polaroids open apart at
+  // the top/bottom of the section and nest together (`--drift` 0) at centre.
+  // Driven via a CSS var so it composes with the CSS/Tailwind hover + entry
+  // transforms and survives Swiper's loop clones.
+  useGSAP(
+    () => {
+      const el = sectionRef.current;
+      if (!el) return;
+      el.style.setProperty("--drift", "0");
+      const proxy = { p: 0 };
+      gsap.to(proxy, {
+        p: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: carouselRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.6,
+        },
+        onUpdate: () => {
+          // Let user interaction win: freeze drift while swiping.
+          if (draggingRef.current) return;
+          const drift = Math.abs(proxy.p - 0.5) * 2; // 1 at edges, 0 at centre
+          el.style.setProperty("--drift", drift.toFixed(3));
+        },
+      });
+    },
+    { scope: sectionRef }
+  );
+
+  useEffect(() => () => Fancybox.close(), []);
+
+  // Delegated click → open Fancybox at the clicked item's "after" image.
+  const onCarouselClick = (e: MouseEvent<HTMLDivElement>) => {
+    const card = (e.target as HTMLElement).closest("[data-proof-index]");
+    if (!card) return;
+    const i = Number(card.getAttribute("data-proof-index"));
+    Fancybox.show(GALLERY, { startIndex: i * 2 + 1 });
+  };
+
   return (
     <section
       id="kanit"
+      ref={sectionRef}
       aria-label="Kanıt"
       className="border-t border-[rgba(14,14,12,0.06)] bg-paper-cool py-[42px] px-[clamp(22px,5vw,64px)] md:py-[clamp(68px,10vw,128px)]"
     >
       <div className="mx-auto max-w-[1160px]">
-        {/* Header */}
         <motion.div {...revealProps} className="max-w-[640px]">
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
@@ -29,57 +88,58 @@ export default function Proof() {
           </p>
         </motion.div>
 
-        {/* Polaroid pair */}
-        <div className="mt-[clamp(44px,6vw,72px)] grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-[clamp(28px,4vw,44px)]">
-          <motion.figure
-            {...revealProps}
-            className="m-0 flex flex-col items-center"
+        {/* Carousel */}
+        <div
+          ref={carouselRef}
+          onClick={onCarouselClick}
+          className="mx-auto mt-[clamp(44px,6vw,72px)] w-full max-w-[680px]"
+        >
+          <Swiper
+            onSwiper={(s) => {
+              swiperRef.current = s;
+            }}
+            onSliderFirstMove={() => {
+              draggingRef.current = true;
+            }}
+            onTouchEnd={() => {
+              setTimeout(() => {
+                draggingRef.current = false;
+              }, 60);
+            }}
+            // mobile: one full-width item; desktop: fixed-width item so the
+            // neighbours' edges peek at the sides.
+            slidesPerView="auto"
+            centeredSlides
+            spaceBetween={24}
+            loop
+            grabCursor
           >
-            <div className="relative aspect-[1/1.16] w-[min(100%,380px)]">
-              {/* back — öncesi */}
-              <div
-                className="absolute left-0 top-[6%] box-border w-[76%] rotate-[-4.5deg] border border-[rgba(14,14,12,0.05)] bg-white p-[10px] pb-[40px]"
-                style={{ boxShadow: "0 10px 28px rgba(14,14,12,0.14)" }}
-              >
-                <div className="relative aspect-square w-full">
-                  <Image
-                    src="/images/ba1-once.png"
-                    alt="Uygulama öncesi"
-                    fill
-                    draggable={false}
-                    sizes="(min-width: 960px) 300px, 60vw"
-                    className="object-cover"
-                  />
-                </div>
-                <span className="absolute bottom-[11px] left-3 font-body text-[9px] font-light uppercase tracking-label text-[rgba(28,27,23,0.55)]">
-                  Öncesi
-                </span>
-              </div>
+            {PROOF_ITEMS.map((item, i) => (
+              <SwiperSlide key={i} className="!h-auto !w-full py-2 md:!w-[380px]">
+                <ProofCard item={item} index={i} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
 
-              {/* front — sonrası */}
-              <div
-                className="absolute right-0 top-0 box-border w-[78%] rotate-[5deg] border border-[rgba(14,14,12,0.05)] bg-white p-[10px] pb-[42px]"
-                style={{ boxShadow: "0 16px 38px rgba(14,14,12,0.2)" }}
-              >
-                <div className="relative aspect-square w-full">
-                  <Image
-                    src="/images/ba1-sonra.png"
-                    alt="Uygulama sonrası — saç sistemi uygulanmış"
-                    fill
-                    draggable={false}
-                    sizes="(min-width: 960px) 300px, 60vw"
-                    className="object-cover"
-                  />
-                </div>
-                <span className="absolute bottom-[12px] left-3 font-body text-[9px] font-light uppercase tracking-label text-clay">
-                  Sonrası
-                </span>
-              </div>
-            </div>
-            <figcaption className="mt-[18px] text-center font-accent text-[15.5px] italic text-[rgba(28,27,23,0.68)]">
-              [Mehmet, 34 — bir öğle arasında]
-            </figcaption>
-          </motion.figure>
+          {/* Prev / next */}
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              aria-label="Önceki"
+              onClick={() => swiperRef.current?.slidePrev()}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(138,111,79,0.4)] text-[18px] text-ink-soft transition-colors hover:border-gold hover:text-clay"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              aria-label="Sonraki"
+              onClick={() => swiperRef.current?.slideNext()}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(138,111,79,0.4)] text-[18px] text-ink-soft transition-colors hover:border-gold hover:text-clay"
+            >
+              ›
+            </button>
+          </div>
         </div>
 
         <motion.p {...revealProps} className="mt-[clamp(28px,4vw,40px)] text-center">
@@ -90,7 +150,6 @@ export default function Proof() {
             className="border-b border-[rgba(184,149,106,0.55)] pb-1 font-body text-[10.5px] font-light uppercase tracking-label text-ink-soft transition-colors duration-[400ms] hover:text-clay"
           >
             Daha fazlası Instagram&apos;da →{" "}
-            {/* handle is an address, exempt from Turkish uppercasing */}
             <span className="normal-case">@alperenayginhairstudio</span>
           </a>
         </motion.p>

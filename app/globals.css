@@ -26,6 +26,31 @@
   }
 }
 
+/* KANIT carousel — slide-entry: images start ~24px open, settle to nested when
+   the slide becomes active (Swiper toggles .swiper-slide-active). */
+@keyframes proofEntryBefore {
+  from {
+    transform: translateX(-24px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes proofEntryAfter {
+  from {
+    transform: translateX(24px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.swiper-slide-active .proof-entry-before {
+  animation: proofEntryBefore 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.swiper-slide-active .proof-entry-after {
+  animation: proofEntryAfter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
