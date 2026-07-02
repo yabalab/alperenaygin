@@ -8,6 +8,7 @@ import Models from "@/components/Models";
 import Process from "@/components/Process";
 import Studio from "@/components/Studio";
 import Master from "@/components/Master";
+import Faq from "@/components/Faq";
 
 export default function Home() {
   return (
@@ -30,6 +31,7 @@ export default function Home() {
       <Process />
       <Studio />
       <Master />
+      <Faq />
     </div>
   );
 }
