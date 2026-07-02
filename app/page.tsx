@@ -9,6 +9,7 @@ import Process from "@/components/Process";
 import Studio from "@/components/Studio";
 import Master from "@/components/Master";
 import Faq from "@/components/Faq";
+import Contact from "@/components/Contact";
 
 export default function Home() {
   return (
@@ -32,6 +33,7 @@ export default function Home() {
       <Studio />
       <Master />
       <Faq />
+      <Contact />
     </div>
   );
 }
