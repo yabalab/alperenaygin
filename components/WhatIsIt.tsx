@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
+import ScrollFillText from "./ScrollFillText";
 
 // The three reassurance points, each with the reference's exact inline SVG.
 const POINTS = [
@@ -111,13 +112,11 @@ export default function WhatIsIt() {
             </motion.div>
           ))}
 
-          <motion.p
-            {...revealProps}
-            className="mt-[26px] font-accent text-[clamp(16px,1.3vw,18px)] italic leading-[1.65] text-[rgba(28,27,23,0.62)] [text-wrap:pretty]"
-          >
-            Duş al, denize gir, havuza atla, fön çek, renk değiştir. Kendi saçınla
-            ne yapıyorsan.
-          </motion.p>
+          {/* Signature slogan — enlarged + scroll-scrubbed letter colour fill */}
+          <ScrollFillText
+            text="Duş al, denize gir, havuza atla, fön çek, renk değiştir. Kendi saçınla ne yapıyorsan."
+            className="mt-8 font-accent text-[clamp(26px,5vw,38px)] italic leading-[1.3] [text-wrap:pretty]"
+          />
         </div>
       </div>
     </section>
