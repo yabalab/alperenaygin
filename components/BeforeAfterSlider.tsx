@@ -15,7 +15,10 @@ const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const START = 65;
 const END = 40;
 // Scroll distance over which the sweep completes (hero is still on screen).
-const SWEEP_PX = 240;
+const SWEEP_PX = 100;
+// Fixed-header spacer height — the slider box starts this far down, so we offset
+// the trigger by it to make the sweep run over scroll 0 → SWEEP_PX (no dead zone).
+const HEADER_OFFSET = 64;
 
 type Props = {
   /** Image shown on the right / underneath (the "after" state). */
@@ -94,9 +97,10 @@ export default function BeforeAfterSlider({
         ease: "none",
         scrollTrigger: {
           trigger: boxRef.current,
-          start: "top top",
-          end: `top+=${SWEEP_PX} top`, // finishes early, hero still visible
-          scrub: 0.5, // ties to scroll, smoothed so it never jitters (no snap)
+          start: `top top+=${HEADER_OFFSET}`, // begins at scroll 0
+          end: `top+=${SWEEP_PX} top+=${HEADER_OFFSET}`, // done by ~SWEEP_PX scroll
+          scrub: 0.7, // higher smoothing so the ~100px trigger eases out over a
+          // few hundred ms — fast but never snappy
         },
         onUpdate: () => {
           // User priority + don't fight the intro; stop once hero has left
