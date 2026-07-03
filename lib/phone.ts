@@ -40,3 +40,19 @@ export function formatTrPhone(digits: string): string {
 export function isValidTrPhone(digits: string): boolean {
   return /^05\d{9}$/.test(digits);
 }
+
+/** "05XXXXXXXXX" -> "905XXXXXXXXX" for wa.me / international dialling. */
+export function trPhoneIntl(raw: string): string {
+  const d = sanitizeTrPhone(raw);
+  return d.startsWith("0") ? "90" + d.slice(1) : d;
+}
+
+/** WhatsApp deep link for a TR number. */
+export function whatsappLink(raw: string): string {
+  return `https://wa.me/${trPhoneIntl(raw)}`;
+}
+
+/** `tel:` link for a TR number. */
+export function telLink(raw: string): string {
+  return `tel:+${trPhoneIntl(raw)}`;
+}
