@@ -1,10 +1,12 @@
 import "server-only";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { buildSlotCounts } from "./counts";
 import type {
   AppointmentRow,
   AppointmentNote,
   AppointmentStatus,
   CustomerLite,
+  SlotCounts,
 } from "./types";
 
 const SELECT =
@@ -37,6 +39,8 @@ export type AppointmentDetail = {
   notes: AppointmentNote[];
   /** Same customer's other appointments (history), newest first. */
   others: AppointmentRow[];
+  /** OTHER appointments at the exact same tarih+saat (with customer, oldest first). */
+  sameSlot: AppointmentRow[];
 };
 
 export async function getAppointmentDetail(
@@ -70,7 +74,22 @@ export async function getAppointmentDetail(
     others = (o ?? []).map(normalize);
   }
 
-  return { appointment, notes: (notes ?? []) as AppointmentNote[], others };
+  // Other appointments sharing this exact tarih + saat.
+  const { data: s } = await supabase
+    .from("appointments")
+    .select(SELECT)
+    .eq("tarih", appointment.tarih)
+    .eq("saat", appointment.saat)
+    .neq("id", id)
+    .order("created_at", { ascending: true });
+  const sameSlot = (s ?? []).map(normalize);
+
+  return {
+    appointment,
+    notes: (notes ?? []) as AppointmentNote[],
+    others,
+    sameSlot,
+  };
 }
 
 /** All customers, alphabetical — for the manual-create customer picker. */
@@ -84,13 +103,13 @@ export async function getCustomers(): Promise<CustomerLite[]> {
 }
 
 export type ScheduleData = {
-  /** Appointment slots (to show "bu saatte zaten X randevu var"). */
-  appts: { tarih: string; saat: string; durum: AppointmentStatus }[];
+  /** Per date+slot confirmed/pending counts (computed server-side). */
+  counts: SlotCounts;
   /** Blocked entries; saat=null means the whole day is closed. */
   blocked: { tarih: string; saat: string | null }[];
 };
 
-/** Lightweight date/time marks so the create form can flag busy/closed slots. */
+/** Slot marks for the create form: confirmed/pending counts + blocked slots. */
 export async function getScheduleData(): Promise<ScheduleData> {
   const supabase = await createServerSupabase();
   const [a, b] = await Promise.all([
@@ -98,7 +117,13 @@ export async function getScheduleData(): Promise<ScheduleData> {
     supabase.from("blocked_slots").select("tarih, saat"),
   ]);
   return {
-    appts: (a.data ?? []) as ScheduleData["appts"],
+    counts: buildSlotCounts(
+      (a.data ?? []) as {
+        tarih: string;
+        saat: string;
+        durum: AppointmentStatus;
+      }[]
+    ),
     blocked: (b.data ?? []) as ScheduleData["blocked"],
   };
 }

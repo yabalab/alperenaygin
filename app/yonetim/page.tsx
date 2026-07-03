@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAppointments } from "@/lib/crm/queries";
+import { buildSlotCounts } from "@/lib/crm/counts";
 import AppointmentsBoard from "@/components/yonetim/AppointmentsBoard";
 import { logout } from "./actions";
 
@@ -7,6 +8,8 @@ export const dynamic = "force-dynamic";
 
 export default async function YonetimPage() {
   const appointments = await getAppointments();
+  // Per date+slot confirmed/pending counts, computed server-side.
+  const slotCounts = buildSlotCounts(appointments);
 
   return (
     <main className="min-h-svh bg-paper text-ink-deep">
@@ -38,7 +41,10 @@ export default async function YonetimPage() {
         >
           + Randevu Oluştur
         </Link>
-        <AppointmentsBoard appointments={appointments} />
+        <AppointmentsBoard
+          appointments={appointments}
+          slotCounts={slotCounts}
+        />
       </div>
     </main>
   );

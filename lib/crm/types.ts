@@ -29,3 +29,9 @@ export type AppointmentNote = {
   icerik: string;
   created_at: string;
 };
+
+/** Confirmed vs pending kept SEPARATE (onaylı=dolu, bekleyen=karar verilmemiş). */
+export type SlotCount = { confirmed: number; pending: number };
+
+/** tarih -> saat -> counts. Only slots with ≥1 appointment appear. */
+export type SlotCounts = Record<string, Record<string, SlotCount>>;

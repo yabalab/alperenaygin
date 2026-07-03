@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { setAppointmentStatus } from "@/app/yonetim/actions";
 import { STATUS_META, SOURCE_LABEL } from "@/lib/crm/status";
-import type { AppointmentRow, AppointmentStatus } from "@/lib/crm/types";
+import type {
+  AppointmentRow,
+  AppointmentStatus,
+  SlotCounts,
+} from "@/lib/crm/types";
+import { slotCountLabel } from "@/lib/crm/counts";
 import { dayLabel } from "@/lib/crm/format";
 import { PhoneActions, PhoneText, StatusBadge } from "./ui";
 
@@ -17,8 +22,10 @@ function trLower(s: string) {
 
 export default function AppointmentsBoard({
   appointments,
+  slotCounts,
 }: {
   appointments: AppointmentRow[];
+  slotCounts: SlotCounts;
 }) {
   const pendingCount = appointments.filter((a) => a.durum === "bekliyor").length;
   const [tab, setTab] = useState<Tab>("aktif");
@@ -114,7 +121,12 @@ export default function AppointmentsBoard({
             empty="Onay bekleyen randevu yok."
           >
             {pending.map((a) => (
-              <AppointmentCard key={a.id} a={a} prominent />
+              <AppointmentCard
+                key={a.id}
+                a={a}
+                prominent
+                slotNote={pendingSlotNote(a, slotCounts)}
+              />
             ))}
           </Section>
           <Section
@@ -250,12 +262,27 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
+/**
+ * For a pending card: "Bu saatte: 1 onaylı · 2 bekleyen (bu dahil)" when other
+ * appointments share the slot. Null when this is the only one. The pending count
+ * includes this request itself → "(bu dahil)".
+ */
+function pendingSlotNote(a: AppointmentRow, slotCounts: SlotCounts): string | null {
+  const c = slotCounts[a.tarih]?.[a.saat];
+  if (!c) return null;
+  const hasOthers = c.confirmed > 0 || c.pending > 1;
+  if (!hasOthers) return null;
+  return `Bu saatte: ${slotCountLabel(c)} (bu dahil)`;
+}
+
 function AppointmentCard({
   a,
   prominent,
+  slotNote,
 }: {
   a: AppointmentRow;
   prominent?: boolean;
+  slotNote?: string | null;
 }) {
   const name = a.customer?.ad ?? "— (müşteri silinmiş)";
   return (
@@ -290,6 +317,11 @@ function AppointmentCard({
           <span className="text-ink-soft/30">·</span>
           <span className="text-ink-soft/60">{SOURCE_LABEL[a.kaynak]}</span>
         </div>
+        {slotNote && (
+          <div className="mt-2 inline-block rounded bg-amber-50 px-2 py-1 font-body text-[12px] text-amber-800">
+            {slotNote}
+          </div>
+        )}
       </Link>
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ink-deep/5 px-4 py-2.5">

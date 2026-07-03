@@ -9,6 +9,7 @@ import {
 import type { CustomerLite } from "@/lib/crm/types";
 import type { ScheduleData } from "@/lib/crm/queries";
 import { ADMIN_SLOT_HOURS } from "@/lib/crm/slots";
+import { slotCountLabel } from "@/lib/crm/counts";
 import { formatFullDate } from "@/lib/crm/format";
 import { sanitizeTrPhone, formatTrPhone } from "@/lib/phone";
 import AdminCalendar from "./AdminCalendar";
@@ -46,15 +47,9 @@ export default function CreateAppointmentForm({
 
   // Per-day marks for the selected date.
   const marks = useMemo(() => {
-    const counts: Record<string, number> = {};
     const blockedSet = new Set<string>();
     let dayBlocked = false;
     if (date) {
-      for (const a of schedule.appts) {
-        if (a.tarih === date && a.durum !== "iptal" && a.durum !== "gelmedi") {
-          counts[a.saat] = (counts[a.saat] ?? 0) + 1;
-        }
-      }
       for (const b of schedule.blocked) {
         if (b.tarih === date) {
           if (b.saat === null) dayBlocked = true;
@@ -62,7 +57,7 @@ export default function CreateAppointmentForm({
         }
       }
     }
-    return { counts, blockedSet, dayBlocked };
+    return { dayCounts: date ? (schedule.counts[date] ?? {}) : {}, blockedSet, dayBlocked };
   }, [date, schedule]);
 
   const filteredCustomers = useMemo(() => {
@@ -140,7 +135,7 @@ export default function CreateAppointmentForm({
         ) : (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
             {ADMIN_SLOT_HOURS.map((h) => {
-              const count = marks.counts[h] ?? 0;
+              const label = slotCountLabel(marks.dayCounts[h]);
               const blocked = marks.blockedSet.has(h);
               const active = slot === h;
               return (
@@ -155,12 +150,10 @@ export default function CreateAppointmentForm({
                   }`}
                 >
                   <span className="font-medium">{h}</span>
-                  {(count > 0 || blocked) && (
-                    <span className="mt-0.5 text-[10px] leading-none">
+                  {(label || blocked) && (
+                    <span className="mt-0.5 text-center text-[10px] leading-tight">
                       {blocked && <span className="text-rose-600">kapalı </span>}
-                      {count > 0 && (
-                        <span className="text-amber-700">{count} rndv</span>
-                      )}
+                      {label && <span className="text-amber-700">{label}</span>}
                     </span>
                   )}
                 </button>
@@ -168,9 +161,9 @@ export default function CreateAppointmentForm({
             })}
           </div>
         )}
-        {date && !closeAllDay && slot && (marks.counts[slot] ?? 0) > 0 && (
+        {date && !closeAllDay && slot && slotCountLabel(marks.dayCounts[slot]) && (
           <p className="mt-3 font-body text-[12px] text-amber-700">
-            Bu saatte zaten {marks.counts[slot]} randevu var — yine de
+            Bu saatte: {slotCountLabel(marks.dayCounts[slot])} — yine de
             ekleyebilirsiniz.
           </p>
         )}

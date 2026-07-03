@@ -21,7 +21,7 @@ export default async function AppointmentDetailPage({
   const detail = await getAppointmentDetail(id);
   if (!detail) notFound();
 
-  const { appointment: a, notes, others } = detail;
+  const { appointment: a, notes, others, sameSlot } = detail;
   const actions = STATUS_TRANSITIONS[a.durum];
 
   return (
@@ -155,6 +155,38 @@ export default async function AppointmentDetailPage({
             )}
           </ul>
         </section>
+
+        {/* Same slot — other appointments at this exact tarih + saat */}
+        {sameSlot.length > 0 && (
+          <section className="rounded-xl border border-ink-deep/10 bg-white p-5 shadow-sm">
+            <h2 className="font-body text-[11px] uppercase tracking-label text-clay">
+              Bu saatte diğer randevular
+            </h2>
+            <p className="mt-1 font-body text-[12px] text-ink-soft/50">
+              {formatFullDate(a.tarih)} · {a.saat}
+            </p>
+            <ul className="mt-3 flex flex-col divide-y divide-ink-deep/5">
+              {sameSlot.map((o) => (
+                <li key={o.id}>
+                  <Link
+                    href={`/yonetim/randevu/${o.id}`}
+                    className="flex items-center justify-between gap-3 py-2.5 transition-colors hover:opacity-70"
+                  >
+                    <span className="min-w-0 truncate font-body text-[14px] text-ink-deep">
+                      {o.customer?.ad ?? "— (müşteri silinmiş)"}
+                      {o.kaynak === "manuel" && (
+                        <span className="ml-2 text-[12px] text-ink-soft/50">
+                          Manuel
+                        </span>
+                      )}
+                    </span>
+                    <StatusBadge durum={o.durum} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Customer history */}
         {others.length > 0 && (
