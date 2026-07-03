@@ -1,14 +1,52 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
 
 export default function Master() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const portraitRef = useRef<HTMLImageElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+
+  // MOBILE ONLY: a gentle parallax — the portrait drifts up while its cream
+  // backdrop drifts down as the section scrolls, giving depth. Distinct from
+  // the "Duş al" letter-fill signature. scrub → only moves with scroll (no
+  // free-running tween), composited transforms (no reflow). Web is untouched.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(max-width: 767px)", () => {
+        const d = { p: 0 };
+        gsap.to(d, {
+          p: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.6,
+          },
+          onUpdate: () => {
+            const img = portraitRef.current;
+            const bd = backdropRef.current;
+            // portrait drifts up (+22→−22), backdrop drifts the other way.
+            if (img) img.style.transform = `translateY(${(0.5 - d.p) * 44}px)`;
+            if (bd) bd.style.transform = `translateY(${(d.p - 0.5) * 32}px)`;
+          },
+        });
+      });
+    },
+    { scope: sectionRef }
+  );
+
   return (
     <section
       id="usta"
+      ref={sectionRef}
       aria-label="Usta"
       className="bg-paper py-[42px] px-[clamp(22px,5vw,64px)] md:py-[clamp(68px,10vw,128px)]"
     >
@@ -19,6 +57,7 @@ export default function Master() {
           className="relative mx-auto w-full max-w-[420px]"
         >
           <div
+            ref={backdropRef}
             className="absolute bottom-0 left-[2%] right-[2%] top-[8%] rounded-b-[12px] rounded-t-[999px] border border-[rgba(184,149,106,0.22)]"
             style={{
               background: "linear-gradient(180deg,#EFE7D8 0%,#EAE0CF 100%)",
@@ -26,6 +65,7 @@ export default function Master() {
             }}
           />
           <Image
+            ref={portraitRef}
             src="/images/alperen-portre.png"
             alt="Alperen Aygın — kollar kavuşturulmuş portre"
             width={1024}
