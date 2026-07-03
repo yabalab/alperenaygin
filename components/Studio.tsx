@@ -4,18 +4,11 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
+import { useT } from "./cms/ContentProvider";
 
 const POINTS = [
-  {
-    num: "01",
-    title: "Ayrı odalar.",
-    desc: "Görüşme de uygulama da kapalı kapı ardında.",
-  },
-  {
-    num: "02",
-    title: "Randevuyla.",
-    desc: "Herkes kendi saatinde; karşılaşma olmaz.",
-  },
+  { num: "01", titleKey: "atolye.p1_title", descKey: "atolye.p1_desc" },
+  { num: "02", titleKey: "atolye.p2_title", descKey: "atolye.p2_desc" },
 ];
 
 const PHOTOS = [
@@ -30,6 +23,7 @@ const PHOTOS = [
 ];
 
 export default function Studio() {
+  const t = useT();
   return (
     <section
       id="atolye"
@@ -41,18 +35,16 @@ export default function Studio() {
         <motion.div {...revealProps}>
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-gold">
-            Mekan &amp; Gizlilik
+            {t("atolye.eyebrow")}
           </div>
           <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight text-paper [text-wrap:balance]">
-            Kimse görmeden.
+            {t("atolye.title")}
           </MaskReveal>
           <p className="mt-[22px] max-w-[48ch] font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.75] text-[rgba(244,239,230,0.78)] [text-wrap:pretty]">
-            Serdivan&apos;daki yeni atölyemiz daha büyük ve ayrı odalı. Randevun
-            senin — kapalı bir odada, tek tek ilgileniriz. İstersen kimseyle
-            karşılaşmadan gelir, kimse anlamadan gidersin.
+            {t("atolye.paragraph1")}
           </p>
           <p className="mt-[14px] max-w-[48ch] font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.75] text-[rgba(244,239,230,0.78)] [text-wrap:pretty]">
-            Ekip büyüdü; aynı anda birkaç kişiye hizmet verebiliyoruz. Beklemezsin.
+            {t("atolye.paragraph2")}
           </p>
 
           {POINTS.map((p, i) => (
@@ -67,10 +59,10 @@ export default function Studio() {
               </span>
               <p className="m-0 text-[16.5px] leading-[1.6]">
                 <strong className="font-display font-medium text-paper">
-                  {p.title}
+                  {t(p.titleKey)}
                 </strong>{" "}
                 <span className="font-body text-[rgba(244,239,230,0.66)]">
-                  {p.desc}
+                  {t(p.descKey)}
                 </span>
               </p>
             </div>

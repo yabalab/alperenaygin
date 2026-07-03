@@ -4,32 +4,34 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
+import { useT } from "./cms/ContentProvider";
 
 const CARDS = [
   {
     num: "01",
-    title: "Ferah Tarama",
+    titleKey: "modeller.m1_title",
     img: "/images/model-ferah-tarama.png",
     alt: "Ferah Tarama modeli — french lace taban yapısı",
-    desc: "Orta bölümü french lace. Kafa derin nefes alır, su geçirir. Ön 1 cm'lik bölüme ağartma uygulanır — saç çizgin doğal görünür. Tül, ölçüne göre kesilir.",
+    descKey: "modeller.m1_desc",
   },
   {
     num: "02",
-    title: "Lux Protez",
+    titleKey: "modeller.m2_title",
     img: "/images/model-lux-protez.png",
     alt: "Lux Protez modeli — nanofilament tül taban",
-    desc: "Tabanın tamamı nanofilament tül (France Lace). Baştan sona nefes alır. Ön 4 cm ağartılır. Ön tülde 1 cm'lik bölüm RSK tek düğümle işlenir — mümkün olan en doğal saç çizgisi.",
+    descKey: "modeller.m2_desc",
   },
   {
     num: "03",
-    title: "Sil Baştan",
+    titleKey: "modeller.m3_title",
     img: "/images/model-sil-bastan.png",
     alt: "Sil Baştan modeli — full kalıp taban",
-    desc: "Full kalıp. Komple/dengesiz dökülme, doğuştan saçsızlık, alopesi, radyoterapi sonrası dökülme, yanık ya da kafa şekli farklılıkları için. Alından enseye, şakaktan şakağa.",
+    descKey: "modeller.m3_desc",
   },
 ];
 
 export default function Models() {
+  const t = useT();
   return (
     <section
       id="modeller"
@@ -40,14 +42,13 @@ export default function Models() {
         <motion.div {...revealProps} className="max-w-[680px]">
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
-            Modeller
+            {t("modeller.eyebrow")}
           </div>
           <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
-            Üç yol. Hepsi kendi saçın.
+            {t("modeller.title")}
           </MaskReveal>
           <p className="mt-5 font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.7] text-[rgba(28,27,23,0.78)] [text-wrap:pretty]">
-            Hepsi %100 gerçek insan saçından, Kore işçiliği. Fark; taban yapısında
-            ve doğallığın derecesinde.
+            {t("modeller.intro")}
           </p>
         </motion.div>
 
@@ -72,10 +73,10 @@ export default function Models() {
                   {c.num}
                 </div>
                 <h3 className="m-0 font-display text-[clamp(21px,1.8vw,24px)] font-[480] leading-[1.15]">
-                  {c.title}
+                  {t(c.titleKey)}
                 </h3>
                 <p className="m-0 font-body text-[16.5px] leading-[1.65] text-[rgba(28,27,23,0.75)] [text-wrap:pretty]">
-                  {c.desc}
+                  {t(c.descKey)}
                 </p>
               </div>
             </motion.article>
@@ -86,7 +87,7 @@ export default function Models() {
           {...revealProps}
           className="mt-[clamp(28px,4vw,40px)] text-center font-accent text-[clamp(16px,1.3vw,18px)] italic text-[rgba(28,27,23,0.62)]"
         >
-          Hangisinin sana uyduğunu ön görüşmede birlikte kararlaştırırız.
+          {t("modeller.footnote")}
         </motion.p>
       </div>
     </section>

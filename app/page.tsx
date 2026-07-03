@@ -12,9 +12,18 @@ import Faq from "@/components/Faq";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import RandevuChip from "@/components/RandevuChip";
+import { getSiteContent } from "@/lib/cms/queries";
+import { ContentProvider } from "@/components/cms/ContentProvider";
 
-export default function Home() {
+// ISR: serve cached HTML, refresh content at most hourly. CMS saves call
+// revalidatePath("/") to push edits live immediately.
+export const revalidate = 3600;
+
+export default async function Home() {
+  const content = await getSiteContent();
+
   return (
+    <ContentProvider content={content}>
     <div className="min-h-svh bg-paper font-body text-ink-deep">
       <h1 className="absolute h-px w-px overflow-hidden whitespace-nowrap [clip-path:inset(50%)]">
         Sakarya Protez Saç — Alperen Aygın · Serdivan Saç Sistemi Uygulaması
@@ -39,5 +48,6 @@ export default function Home() {
       <Footer />
       <RandevuChip />
     </div>
+    </ContentProvider>
   );
 }

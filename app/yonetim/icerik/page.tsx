@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { getAppointments } from "@/lib/crm/queries";
-import { buildSlotCounts } from "@/lib/crm/counts";
-import AppointmentsBoard from "@/components/yonetim/AppointmentsBoard";
-import { logout } from "./actions";
+import { getSiteContent } from "@/lib/cms/queries";
+import ContentEditor from "@/components/yonetim/ContentEditor";
+import { logout } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function YonetimPage() {
-  const appointments = await getAppointments();
-  // Per date+slot confirmed/pending counts, computed server-side.
-  const slotCounts = buildSlotCounts(appointments);
+export default async function ContentPage() {
+  // Current effective values (saved DB values over hardcoded defaults).
+  const values = await getSiteContent();
 
   return (
     <main className="min-h-svh bg-paper text-ink-deep">
@@ -20,21 +18,15 @@ export default async function YonetimPage() {
               Alperen Aygın
             </p>
             <h1 className="mt-0.5 font-display text-lg font-light tracking-tight">
-              Randevular
+              İçerik
             </h1>
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="/yonetim/musteriler"
+              href="/yonetim"
               className="font-body text-[12px] text-ink-soft transition-colors hover:text-ink-deep"
             >
-              Müşteriler
-            </Link>
-            <Link
-              href="/yonetim/icerik"
-              className="font-body text-[12px] text-ink-soft transition-colors hover:text-ink-deep"
-            >
-              İçerik
+              Randevular
             </Link>
             <form action={logout}>
               <button
@@ -49,16 +41,11 @@ export default async function YonetimPage() {
       </header>
 
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-        <Link
-          href="/yonetim/randevu/yeni"
-          className="mb-5 flex items-center justify-center gap-2 rounded-lg bg-ink-deep px-4 py-3.5 font-body text-[13px] uppercase tracking-label text-paper transition-opacity hover:opacity-90"
-        >
-          + Randevu Oluştur
-        </Link>
-        <AppointmentsBoard
-          appointments={appointments}
-          slotCounts={slotCounts}
-        />
+        <p className="mb-5 font-body text-[13px] text-ink-soft/60">
+          Bir bölüm seçin, metinleri düzenleyip kaydedin. Boş bırakılan alan
+          sitede varsayılan metne döner.
+        </p>
+        <ContentEditor values={values} />
       </div>
     </main>
   );

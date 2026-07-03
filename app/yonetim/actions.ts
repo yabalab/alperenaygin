@@ -6,6 +6,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { ALL_STATUSES } from "@/lib/crm/status";
 import type { AppointmentStatus } from "@/lib/crm/types";
 import { sanitizeTrPhone, isValidTrPhone } from "@/lib/phone";
+import { CMS_SECTIONS } from "@/lib/cms/content";
+import { packValue } from "@/lib/cms/value";
 
 export async function logout() {
   const supabase = await createServerSupabase();
@@ -215,4 +217,35 @@ export async function addCustomerNote(formData: FormData) {
     .insert({ customer_id, icerik, appointment_id: null });
 
   revalidatePath(`/yonetim/musteriler/${customer_id}`);
+}
+
+export type UpdateContentState = { ok: boolean; error: string | null };
+
+/**
+ * Save a CMS section's fields to site_content (value = {tr, en} JSON). Only TR
+ * is written now; empty TR reverts that key to the hardcoded default on the
+ * site. Revalidates the cached content tag + the homepage.
+ */
+export async function updateContent(
+  _prev: UpdateContentState,
+  formData: FormData
+): Promise<UpdateContentState> {
+  const sectionId = String(formData.get("sectionId") ?? "");
+  const section = CMS_SECTIONS.find((s) => s.id === sectionId);
+  if (!section) return { ok: false, error: "Geçersiz bölüm." };
+
+  const supabase = await createServerSupabase();
+  const rows = section.fields.map((f) => ({
+    key: f.key,
+    value: packValue(String(formData.get(f.key) ?? "").trim()),
+    grup: sectionId,
+  }));
+
+  const { error } = await supabase
+    .from("site_content")
+    .upsert(rows, { onConflict: "key" });
+  if (error) return { ok: false, error: "Kaydedilemedi, lütfen tekrar deneyin." };
+
+  revalidatePath("/"); // push edits live (homepage is ISR-cached)
+  return { ok: true, error: null };
 }

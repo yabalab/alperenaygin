@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { useT } from "./cms/ContentProvider";
 
 // Güven şeridi — a large, flowing editorial line under the hero.
 // Numeric items count up on reveal; plain items stay as-is.
@@ -9,19 +10,24 @@ type Item =
   | string
   | { prefix?: string; count: number; suffix?: string };
 
-const ITEMS: Item[] = [
-  // "[X] yıl" — placeholder years, counts up. Swap 12 for the real number.
-  { prefix: "", count: 12, suffix: " yıl" },
-  "Ayrı odalı özel atölye",
-  { prefix: "%", count: 100, suffix: " gerçek insan saçı" },
-  "Serdivan / Sakarya",
-];
-
 const numberCls = "font-display text-[clamp(16px,2.1vw,25px)] font-[380] text-ink-soft";
 
 export default function TrustStrip() {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+
+  // Editable text from the CMS; the year still counts up (falls back to plain
+  // text if a non-number is entered).
+  const years = Number(t("trust.years"));
+  const ITEMS: Item[] = [
+    Number.isFinite(years)
+      ? { prefix: "", count: years, suffix: " yıl" }
+      : `${t("trust.years")} yıl`,
+    t("trust.item2"),
+    { prefix: "%", count: 100, suffix: ` ${t("trust.material")}` },
+    t("trust.item4"),
+  ];
 
   // Count-up — wall-clock rAF (finishes in a fixed time regardless of frame
   // rate, unlike a per-frame tween which the page's backdrop-blurs can stall).

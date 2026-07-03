@@ -2,6 +2,7 @@
 
 import { motion, type Variants } from "framer-motion";
 import BeforeAfterSlider from "./BeforeAfterSlider";
+import { useT, MultiLine } from "./cms/ContentProvider";
 
 const WA = "https://wa.me/905354838997";
 const PHONE = "+905354838997";
@@ -18,6 +19,7 @@ const reveal: Variants = {
 };
 
 export default function Hero() {
+  const t = useT();
   return (
     <section
       id="hero"
@@ -35,7 +37,7 @@ export default function Hero() {
         <motion.div initial="hidden" animate="show" custom={0.1} variants={reveal}>
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
-            Serdivan · Sakarya · Saç Sistemi
+            {t("hero.eyebrow")}
           </div>
         </motion.div>
 
@@ -48,11 +50,9 @@ export default function Hero() {
           variants={reveal}
           className="mt-5 font-display text-[clamp(31px,3.4vw,48px)] font-[360] leading-[1.04] tracking-tight [text-wrap:balance]"
         >
-          <span className="block [text-wrap:balance]">
-            Aynaya baktığında gördüğün yüz.
-          </span>
+          <span className="block [text-wrap:balance]">{t("hero.title1")}</span>
           <span className="block text-[rgba(14,14,12,0.62)] [text-wrap:balance]">
-            Onu geri istiyorsan, burada bir adres var.
+            {t("hero.title2")}
           </span>
         </motion.div>
 
@@ -63,9 +63,7 @@ export default function Hero() {
           variants={reveal}
           className="mt-5 max-w-[42ch] font-accent text-[clamp(17px,1.4vw,20px)] italic leading-[1.6] text-[rgba(28,27,23,0.78)] [text-wrap:pretty]"
         >
-          Serdivan&apos;da sessiz bir atölye.
-          <br />
-          Acı yok, kesik yok, iyileşme süreci yok. Sadece saç.
+          <MultiLine text={t("hero.subtitle")} />
         </motion.p>
 
         <motion.div

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import ScrollFillText from "./ScrollFillText";
 import MaskReveal from "./MaskReveal";
+import { useT } from "./cms/ContentProvider";
 
 // The three reassurance points, each with the reference's exact inline SVG.
 const POINTS = [
@@ -19,8 +20,8 @@ const POINTS = [
         <line x1="4" y1="4" x2="20" y2="20" stroke="#B8956A" strokeWidth="1.4" />
       </>
     ),
-    title: "Acısız.",
-    desc: "Cerrahi değil. Uygulama sırasında ağrı, sızı yok.",
+    titleKey: "nedir.point1_title",
+    descKey: "nedir.point1_desc",
   },
   {
     icon: (
@@ -40,8 +41,8 @@ const POINTS = [
         />
       </>
     ),
-    title: "Geri dönüşü var.",
-    desc: "Kalıcı bir karar vermek zorunda değilsin.",
+    titleKey: "nedir.point2_title",
+    descKey: "nedir.point2_desc",
   },
   {
     icon: (
@@ -51,12 +52,13 @@ const POINTS = [
         <path d="M4 18 Q9 16 12 18.5 T20 19" stroke="#B8956A" strokeWidth="1.4" strokeLinecap="round" />
       </>
     ),
-    title: "Kendi saçına zarar vermez.",
-    desc: "Kafa derisi hava alır, terletmez.",
+    titleKey: "nedir.point3_title",
+    descKey: "nedir.point3_desc",
   },
 ];
 
 export default function WhatIsIt() {
+  const t = useT();
   return (
     <section
       id="nedir"
@@ -68,15 +70,13 @@ export default function WhatIsIt() {
         <motion.div {...revealProps}>
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
-            Saç Sistemi
+            {t("nedir.eyebrow")}
           </div>
           <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
-            Protez saç nedir?
+            {t("nedir.title")}
           </MaskReveal>
           <p className="mt-[22px] max-w-[46ch] font-body text-[clamp(17.5px,1.4vw,20px)] leading-[1.7] text-[rgba(28,27,23,0.82)] [text-wrap:pretty]">
-            Saç kaybı yaşadığın bölgeye, kendi saç yapına birebir uyacak şekilde
-            hazırlanmış bir ünite. Medikal sabitleyicilerle yerine oturur. Kendi
-            saçın gibi yıkarsın, tararsın, şekil verirsin.
+            {t("nedir.paragraph")}
           </p>
         </motion.div>
 
@@ -84,7 +84,7 @@ export default function WhatIsIt() {
         <div>
           {POINTS.map((p, i) => (
             <motion.div
-              key={p.title}
+              key={p.titleKey}
               {...revealProps}
               className={`flex items-baseline gap-[18px] border-t border-[rgba(14,14,12,0.12)] ${
                 i === POINTS.length - 1
@@ -104,10 +104,10 @@ export default function WhatIsIt() {
               </svg>
               <p className="m-0 text-[clamp(16.5px,1.3vw,18.5px)] leading-[1.55]">
                 <strong className="font-display text-[1.12em] font-medium">
-                  {p.title}
+                  {t(p.titleKey)}
                 </strong>{" "}
                 <span className="font-body text-[rgba(28,27,23,0.75)]">
-                  {p.desc}
+                  {t(p.descKey)}
                 </span>
               </p>
             </motion.div>
@@ -115,7 +115,7 @@ export default function WhatIsIt() {
 
           {/* Signature slogan — enlarged + scroll-scrubbed letter colour fill */}
           <ScrollFillText
-            text="Duş al, denize gir, havuza atla, fön çek, renk değiştir. Kendi saçınla ne yapıyorsan."
+            text={t("nedir.slogan")}
             className="mt-8 font-accent text-[clamp(26px,5vw,38px)] italic leading-[1.3] [text-wrap:pretty]"
           />
         </div>

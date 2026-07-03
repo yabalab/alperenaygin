@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
 import StyledMap from "./StyledMap";
+import { useT, MultiLine } from "./cms/ContentProvider";
 
 const WA = "https://wa.me/905354838997";
 const TEL = "tel:+905354838997";
@@ -24,6 +25,7 @@ const detailLinkCls =
   "border-b border-[rgba(184,149,106,0.5)] font-body text-[17.5px] text-ink-deep no-underline transition-colors hover:text-clay";
 
 export default function Contact() {
+  const t = useT();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
@@ -56,14 +58,13 @@ export default function Contact() {
         >
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
-            İletişim &amp; Randevu
+            {t("iletisim.eyebrow")}
           </div>
           <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
-            Bir saatlik bir buluşma.
+            {t("iletisim.title")}
           </MaskReveal>
           <p className="mt-5 font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.7] text-[rgba(28,27,23,0.78)] [text-wrap:pretty]">
-            İstersen formu doldur, istersen WhatsApp&apos;tan yaz, istersen ara.
-            Üçü de sana ulaşır.
+            {t("iletisim.intro")}
           </p>
         </motion.div>
 
@@ -82,9 +83,7 @@ export default function Contact() {
             ) : (
               <>
                 <p className="mb-6 font-body text-[13.5px] leading-[1.7] text-[rgba(28,27,23,0.55)] [text-wrap:pretty]">
-                  Fotoğraf göndermek zorunda değilsiniz.
-                  <br />
-                  Önce sadece konuşalım.
+                  <MultiLine text={t("iletisim.form_hint")} />
                 </p>
                 <form onSubmit={onSubmit} className="flex flex-col gap-[26px]">
                   <label className="flex flex-col gap-2">
@@ -180,9 +179,7 @@ export default function Contact() {
           >
             <div className="flex flex-col gap-[6px]">
               <span className={detailLabelCls}>Adres</span>
-              <span className={detailValueCls}>
-                [Yeni adres — Serdivan / Sakarya]
-              </span>
+              <span className={detailValueCls}>{t("iletisim.address")}</span>
             </div>
 
             <div className="flex flex-col gap-[6px]">
@@ -211,9 +208,7 @@ export default function Contact() {
 
             <div className="flex flex-col gap-[6px]">
               <span className={detailLabelCls}>Saatler</span>
-              <span className={detailValueCls}>
-                [Pazartesi–Cumartesi, 10:00–19:00 · Randevuyla]
-              </span>
+              <span className={detailValueCls}>{t("iletisim.hours")}</span>
             </div>
 
             <div className="flex flex-col gap-[6px]">

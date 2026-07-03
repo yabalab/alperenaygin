@@ -6,8 +6,10 @@ import { motion } from "framer-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
+import { useT } from "./cms/ContentProvider";
 
 export default function Master() {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
   const portraitRef = useRef<HTMLImageElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -83,22 +85,22 @@ export default function Master() {
         <motion.div {...revealProps} className="pb-[clamp(8px,2vw,36px)]">
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
-            Usta
+            {t("usta.eyebrow")}
           </div>
           <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
-            İşi yapan el.
+            {t("usta.title")}
           </MaskReveal>
           <blockquote className="m-0 mt-[26px] p-0">
             <p className="m-0 max-w-[44ch] font-body text-[clamp(18px,1.6vw,22px)] leading-[1.7] text-[rgba(28,27,23,0.82)] [text-wrap:pretty]">
-              {"[X] yıldır aynı işi yapıyorum: Serdivan'da, küçük bir atölyede, tek tek."}
+              {t("usta.quote1")}
             </p>
             <p className="mt-[14px] max-w-[44ch] font-body text-[clamp(18px,1.6vw,22px)] leading-[1.7] text-[rgba(28,27,23,0.82)] [text-wrap:pretty]">
-              {'Kimseye "şunu da al" demem. Sana ne yakışıyorsa onu konuşuruz. Ölçü doğruysa, gerisi kendiliğinden gelir.'}
+              {t("usta.quote2")}
             </p>
             <footer className="mt-6 flex items-center gap-[14px]">
               <span className="h-px w-[26px] bg-gold" />
               <cite className="font-body text-[10.5px] font-light not-italic uppercase tracking-label text-ink-soft">
-                Alperen Aygın
+                {t("usta.signature")}
               </cite>
             </footer>
           </blockquote>
