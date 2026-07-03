@@ -50,14 +50,9 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(10px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
-        aaMarquee: {
-          from: { transform: "translateX(0)" },
-          to: { transform: "translateX(-50%)" },
-        },
       },
       animation: {
         "fade-up": "aaFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) both",
-        marquee: "aaMarquee 55s linear infinite",
       },
     },
   },
