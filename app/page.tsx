@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import TrustStrip from "@/components/TrustStrip";
 import WhatIsIt from "@/components/WhatIsIt";
 import Proof from "@/components/Proof";
-import InstagramMarquee from "@/components/InstagramMarquee";
+import Instagram from "@/components/Instagram";
 import Models from "@/components/Models";
 import Process from "@/components/Process";
 import Studio from "@/components/Studio";
@@ -29,7 +29,7 @@ export default function Home() {
       <TrustStrip />
       <WhatIsIt />
       <Proof />
-      <InstagramMarquee />
+      <Instagram />
       <Models />
       <Process />
       <Studio />
