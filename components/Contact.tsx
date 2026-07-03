@@ -6,13 +6,9 @@ import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
 import StyledMap from "./StyledMap";
 import { useT, MultiLine } from "./cms/ContentProvider";
+import { telLink, whatsappLink } from "@/lib/phone";
 
-const WA = "https://wa.me/905354838997";
-const TEL = "tel:+905354838997";
-const IG = "https://instagram.com/alperenayginhairstudio";
-const MAIL = "mailto:alperenaygin21@gmail.com";
-
-const DAYS = ["Hafta içi", "Hafta sonu", "Fark etmez"];
+const DAY_KEYS = ["iletisim.day1", "iletisim.day2", "iletisim.day3"];
 
 const inputCls =
   "w-full box-border rounded-none border-0 border-b border-[rgba(14,14,12,0.28)] bg-transparent px-[2px] py-[9px] font-body text-[18px] text-ink-deep outline-none transition-colors duration-[400ms] focus:border-b-gold";
@@ -29,9 +25,14 @@ export default function Contact() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
-  const [day, setDay] = useState("Fark etmez");
+  const [dayIdx, setDayIdx] = useState(2); // track by index — labels are editable
   const [done, setDone] = useState(false);
   const [err, setErr] = useState(false);
+
+  // Editable contact info → derive links.
+  const phoneDisplay = t("iletisim.phone");
+  const email = t("iletisim.email");
+  const igHandle = t("iletisim.instagram").replace(/^@/, "");
 
   // NOTE: no backend — visual/fake success only (backend is a separate track).
   const onSubmit = (e: FormEvent) => {
@@ -74,10 +75,10 @@ export default function Contact() {
             {done ? (
               <div className="animate-fade-up rounded-[6px] border border-[rgba(184,149,106,0.45)] bg-paper-cool px-[30px] py-9 text-center">
                 <div className="font-body text-[10px] font-light uppercase tracking-label text-clay">
-                  Randevu isteğin alındı
+                  {t("iletisim.success_eyebrow")}
                 </div>
                 <p className="mt-[14px] font-body text-[clamp(22px,2vw,28px)] font-normal leading-[1.3]">
-                  Aldık. 24 saat içinde döneceğiz.
+                  {t("iletisim.success_msg")}
                 </p>
               </div>
             ) : (
@@ -87,7 +88,7 @@ export default function Contact() {
                 </p>
                 <form onSubmit={onSubmit} className="flex flex-col gap-[26px]">
                   <label className="flex flex-col gap-2">
-                    <span className={labelCls}>Ad *</span>
+                    <span className={labelCls}>{t("iletisim.form_name")}</span>
                     <input
                       type="text"
                       name="ad"
@@ -99,7 +100,7 @@ export default function Contact() {
                   </label>
 
                   <label className="flex flex-col gap-2">
-                    <span className={labelCls}>Telefon *</span>
+                    <span className={labelCls}>{t("iletisim.form_phone")}</span>
                     <input
                       type="tel"
                       name="telefon"
@@ -112,22 +113,22 @@ export default function Contact() {
                   </label>
 
                   <div className="flex flex-col gap-[10px]">
-                    <span className={labelCls}>Tercih ettiğin gün</span>
+                    <span className={labelCls}>{t("iletisim.form_day")}</span>
                     <div className="flex flex-wrap gap-[10px]">
-                      {DAYS.map((d) => {
-                        const active = day === d;
+                      {DAY_KEYS.map((dk, i) => {
+                        const active = dayIdx === i;
                         return (
                           <button
-                            key={d}
+                            key={dk}
                             type="button"
-                            onClick={() => setDay(d)}
+                            onClick={() => setDayIdx(i)}
                             className={`cursor-pointer rounded-full border px-[18px] pb-[11px] pt-3 font-body text-[9.5px] font-light uppercase tracking-label transition-all duration-[400ms] ease-smooth ${
                               active
                                 ? "border-ink-deep bg-ink-deep text-paper"
                                 : "border-[rgba(14,14,12,0.28)] bg-transparent text-ink-soft"
                             }`}
                           >
-                            {d}
+                            {t(dk)}
                           </button>
                         );
                       })}
@@ -136,7 +137,7 @@ export default function Contact() {
 
                   <label className="flex flex-col gap-2">
                     <span className={labelCls}>
-                      Eklemek istediğin bir şey{" "}
+                      {t("iletisim.form_note")}{" "}
                       <span className="text-[rgba(138,111,79,0.55)]">
                         (opsiyonel)
                       </span>
@@ -152,7 +153,7 @@ export default function Contact() {
 
                   {err && (
                     <p className="-mt-2 font-body text-[9.5px] font-light uppercase tracking-label text-clay">
-                      Ad ve telefon gerekli.
+                      {t("iletisim.form_error")}
                     </p>
                   )}
 
@@ -161,7 +162,7 @@ export default function Contact() {
                       type="submit"
                       className="inline-flex cursor-pointer items-center gap-[10px] rounded-full border-none bg-ink-deep px-7 pb-4 pt-[17px] font-body text-[10.5px] font-light uppercase tracking-label text-paper transition-colors duration-500 ease-smooth hover:bg-clay"
                     >
-                      Randevumu bırak{" "}
+                      {t("iletisim.form_submit")}{" "}
                       <span className="font-accent text-[15px] tracking-normal">
                         →
                       </span>
@@ -185,11 +186,11 @@ export default function Contact() {
             <div className="flex flex-col gap-[6px]">
               <span className={detailLabelCls}>Telefon / WhatsApp</span>
               <div className="flex flex-wrap gap-4">
-                <a href={TEL} className={detailLinkCls}>
-                  0 535 483 89 97
+                <a href={telLink(phoneDisplay)} className={detailLinkCls}>
+                  {phoneDisplay}
                 </a>
                 <a
-                  href={WA}
+                  href={whatsappLink(phoneDisplay)}
                   target="_blank"
                   rel="noopener"
                   className="border-b border-[rgba(184,149,106,0.5)] font-accent text-[17.5px] italic text-ink-deep no-underline transition-colors hover:text-clay"
@@ -201,8 +202,8 @@ export default function Contact() {
 
             <div className="flex flex-col gap-[6px]">
               <span className={detailLabelCls}>E-posta</span>
-              <a href={MAIL} className={`${detailLinkCls} self-start`}>
-                alperenaygin21@gmail.com
+              <a href={`mailto:${email}`} className={`${detailLinkCls} self-start`}>
+                {email}
               </a>
             </div>
 
@@ -214,12 +215,12 @@ export default function Contact() {
             <div className="flex flex-col gap-[6px]">
               <span className={detailLabelCls}>Instagram</span>
               <a
-                href={IG}
+                href={`https://instagram.com/${igHandle}`}
                 target="_blank"
                 rel="noopener"
                 className={`${detailLinkCls} self-start`}
               >
-                @alperenayginhairstudio
+                @{igHandle}
               </a>
             </div>
 
@@ -229,7 +230,7 @@ export default function Contact() {
             </div>
 
             <p className="mt-2 font-body text-[9px] font-light uppercase tracking-label text-[rgba(28,27,23,0.45)]">
-              KVKK: [aydınlatma metni linki]
+              {t("iletisim.kvkk")}
             </p>
           </motion.div>
         </div>
