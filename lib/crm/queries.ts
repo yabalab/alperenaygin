@@ -1,6 +1,11 @@
 import "server-only";
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { AppointmentRow, AppointmentNote } from "./types";
+import type {
+  AppointmentRow,
+  AppointmentNote,
+  AppointmentStatus,
+  CustomerLite,
+} from "./types";
 
 const SELECT =
   "id, tarih, saat, durum, kaynak, not_metni, created_at, customer:customers(id, ad, telefon)";
@@ -66,4 +71,34 @@ export async function getAppointmentDetail(
   }
 
   return { appointment, notes: (notes ?? []) as AppointmentNote[], others };
+}
+
+/** All customers, alphabetical — for the manual-create customer picker. */
+export async function getCustomers(): Promise<CustomerLite[]> {
+  const supabase = await createServerSupabase();
+  const { data } = await supabase
+    .from("customers")
+    .select("id, ad, telefon")
+    .order("ad", { ascending: true });
+  return (data ?? []) as CustomerLite[];
+}
+
+export type ScheduleData = {
+  /** Appointment slots (to show "bu saatte zaten X randevu var"). */
+  appts: { tarih: string; saat: string; durum: AppointmentStatus }[];
+  /** Blocked entries; saat=null means the whole day is closed. */
+  blocked: { tarih: string; saat: string | null }[];
+};
+
+/** Lightweight date/time marks so the create form can flag busy/closed slots. */
+export async function getScheduleData(): Promise<ScheduleData> {
+  const supabase = await createServerSupabase();
+  const [a, b] = await Promise.all([
+    supabase.from("appointments").select("tarih, saat, durum"),
+    supabase.from("blocked_slots").select("tarih, saat"),
+  ]);
+  return {
+    appts: (a.data ?? []) as ScheduleData["appts"],
+    blocked: (b.data ?? []) as ScheduleData["blocked"],
+  };
 }

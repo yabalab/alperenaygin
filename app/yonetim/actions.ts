@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ALL_STATUSES } from "@/lib/crm/status";
 import type { AppointmentStatus } from "@/lib/crm/types";
+import { sanitizeTrPhone, isValidTrPhone } from "@/lib/phone";
 
 export async function logout() {
   const supabase = await createServerSupabase();
@@ -44,4 +45,120 @@ export async function addAppointmentNote(formData: FormData) {
   await supabase.from("notes").insert({ appointment_id, customer_id, icerik });
 
   revalidatePath(`/yonetim/randevu/${appointment_id}`);
+}
+
+export type CreateApptState = { error: string | null };
+
+/**
+ * Manual appointment creation + optional slot/day blocking. These two are
+ * INDEPENDENT: you can create just an appointment, just a block (bayram — no
+ * customer), or both.
+ *   - customerMode: "existing" | "new" | "none"
+ *   - closeSlot: also write blocked_slots(tarih, saat)
+ *   - closeAllDay: write blocked_slots(tarih, saat=null) — whole day closed
+ * NOTE: WhatsApp bildirimi sonraki turda buraya bağlanacak.
+ */
+export async function createManualAppointment(
+  _prev: CreateApptState,
+  formData: FormData
+): Promise<CreateApptState> {
+  const tarih = String(formData.get("tarih") ?? "");
+  const saat = String(formData.get("saat") ?? "");
+  const durum = String(formData.get("durum") ?? "onaylandi") as AppointmentStatus;
+  const note = String(formData.get("note") ?? "").trim();
+  const closeSlot = formData.get("closeSlot") === "true";
+  const closeAllDay = formData.get("closeAllDay") === "true";
+  const customerMode = String(formData.get("customerMode") ?? "none");
+  const customerId = String(formData.get("customerId") ?? "");
+  const newAd = String(formData.get("newAd") ?? "").trim();
+  const newPhone = sanitizeTrPhone(String(formData.get("newPhone") ?? ""));
+
+  if (!tarih) return { error: "Tarih seçin." };
+
+  const wantsAppointment = customerMode === "existing" || customerMode === "new";
+  if (!wantsAppointment && !closeSlot && !closeAllDay) {
+    return {
+      error:
+        "Randevu için müşteri seçin ya da bir kapatma seçeneği işaretleyin.",
+    };
+  }
+  if ((wantsAppointment || closeSlot) && !closeAllDay && !saat) {
+    return { error: "Saat seçin." };
+  }
+  if (wantsAppointment && !ALL_STATUSES.includes(durum)) {
+    return { error: "Geçersiz durum." };
+  }
+
+  const supabase = await createServerSupabase();
+
+  // Resolve the customer (phone is identity — reuse an existing one rather than
+  // creating a duplicate).
+  let resolvedCustomerId: string | null = null;
+  if (customerMode === "existing") {
+    if (!customerId) return { error: "Müşteri seçin." };
+    resolvedCustomerId = customerId;
+  } else if (customerMode === "new") {
+    if (!newAd) return { error: "Müşteri adı gerekli." };
+    if (!isValidTrPhone(newPhone)) {
+      return { error: "Geçerli bir telefon girin (05XX XXX XX XX)." };
+    }
+    const { data: existing } = await supabase
+      .from("customers")
+      .select("id")
+      .eq("telefon", newPhone)
+      .maybeSingle();
+    if (existing) {
+      resolvedCustomerId = existing.id;
+    } else {
+      const { data: created, error } = await supabase
+        .from("customers")
+        .insert({ ad: newAd, telefon: newPhone })
+        .select("id")
+        .single();
+      if (error || !created) return { error: "Müşteri kaydedilemedi." };
+      resolvedCustomerId = created.id;
+    }
+  }
+
+  if (wantsAppointment && resolvedCustomerId) {
+    const { error } = await supabase.from("appointments").insert({
+      customer_id: resolvedCustomerId,
+      tarih,
+      saat,
+      durum,
+      kaynak: "manuel",
+      not_metni: note || null,
+    });
+    if (error) return { error: "Randevu oluşturulamadı." };
+  }
+
+  // Blocking — skip if an identical block already exists.
+  if (closeAllDay) {
+    const { data: existing } = await supabase
+      .from("blocked_slots")
+      .select("id")
+      .eq("tarih", tarih)
+      .is("saat", null)
+      .maybeSingle();
+    if (!existing) {
+      await supabase
+        .from("blocked_slots")
+        .insert({ tarih, saat: null, sebep: note || null });
+    }
+  } else if (closeSlot && saat) {
+    const { data: existing } = await supabase
+      .from("blocked_slots")
+      .select("id")
+      .eq("tarih", tarih)
+      .eq("saat", saat)
+      .maybeSingle();
+    if (!existing) {
+      await supabase
+        .from("blocked_slots")
+        .insert({ tarih, saat, sebep: note || null });
+    }
+  }
+
+  revalidatePath("/yonetim");
+  redirect("/yonetim");
 }
