@@ -162,3 +162,57 @@ export async function createManualAppointment(
   revalidatePath("/yonetim");
   redirect("/yonetim");
 }
+
+export type UpdateCustomerState = { ok: boolean; error: string | null };
+
+/** Update a customer's ad/telefon. telefon is UNIQUE — reject if it collides. */
+export async function updateCustomer(
+  _prev: UpdateCustomerState,
+  formData: FormData
+): Promise<UpdateCustomerState> {
+  const id = String(formData.get("id") ?? "");
+  const ad = String(formData.get("ad") ?? "").trim();
+  const telefon = sanitizeTrPhone(String(formData.get("telefon") ?? ""));
+
+  if (!id) return { ok: false, error: "Geçersiz istek." };
+  if (!ad) return { ok: false, error: "Ad boş olamaz." };
+  if (!isValidTrPhone(telefon)) {
+    return { ok: false, error: "Geçerli bir telefon girin (05XX XXX XX XX)." };
+  }
+
+  const supabase = await createServerSupabase();
+
+  const { data: dupe } = await supabase
+    .from("customers")
+    .select("id")
+    .eq("telefon", telefon)
+    .neq("id", id)
+    .maybeSingle();
+  if (dupe) {
+    return { ok: false, error: "Bu telefon başka bir müşteride kayıtlı." };
+  }
+
+  const { error } = await supabase
+    .from("customers")
+    .update({ ad, telefon })
+    .eq("id", id);
+  if (error) return { ok: false, error: "Kaydedilemedi, lütfen tekrar deneyin." };
+
+  revalidatePath(`/yonetim/musteriler/${id}`);
+  revalidatePath("/yonetim/musteriler");
+  return { ok: true, error: null };
+}
+
+/** Add a customer-level note (appointment_id = null). */
+export async function addCustomerNote(formData: FormData) {
+  const customer_id = String(formData.get("customerId") ?? "");
+  const icerik = String(formData.get("icerik") ?? "").trim();
+  if (!customer_id || !icerik) return;
+
+  const supabase = await createServerSupabase();
+  await supabase
+    .from("notes")
+    .insert({ customer_id, icerik, appointment_id: null });
+
+  revalidatePath(`/yonetim/musteriler/${customer_id}`);
+}

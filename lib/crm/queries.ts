@@ -6,6 +6,7 @@ import type {
   AppointmentNote,
   AppointmentStatus,
   CustomerLite,
+  CustomerListRow,
   SlotCounts,
 } from "./types";
 
@@ -100,6 +101,107 @@ export async function getCustomers(): Promise<CustomerLite[]> {
     .select("id, ad, telefon")
     .order("ad", { ascending: true });
   return (data ?? []) as CustomerLite[];
+}
+
+/** Customers with aggregate stats (total appts + latest appt date) for the list. */
+export async function getCustomersWithStats(): Promise<CustomerListRow[]> {
+  const supabase = await createServerSupabase();
+  const [{ data: customers }, { data: appts }] = await Promise.all([
+    supabase.from("customers").select("id, ad, telefon, kampanya_izni"),
+    supabase.from("appointments").select("customer_id, tarih"),
+  ]);
+
+  const agg: Record<string, { total: number; last: string | null }> = {};
+  for (const a of appts ?? []) {
+    const s = (agg[a.customer_id] ??= { total: 0, last: null });
+    s.total++;
+    if (!s.last || a.tarih > s.last) s.last = a.tarih;
+  }
+
+  return (customers ?? []).map((c) => ({
+    id: c.id,
+    ad: c.ad,
+    telefon: c.telefon,
+    kampanya_izni: c.kampanya_izni,
+    total: agg[c.id]?.total ?? 0,
+    lastAppt: agg[c.id]?.last ?? null,
+  }));
+}
+
+export type CustomerProfile = {
+  customer: {
+    id: string;
+    ad: string;
+    telefon: string;
+    kampanya_izni: boolean;
+    created_at: string;
+  };
+  /** All appointments, newest first. */
+  appointments: AppointmentRow[];
+  /** All notes tied to this customer (customer-level + appointment notes). */
+  notes: AppointmentNote[];
+  stats: {
+    total: number;
+    completed: number; // tamamlandi = "kaç kez geldi"
+    noShow: number; // gelmedi
+    firstVisit: string | null; // earliest tamamlandi
+    lastVisit: string | null; // latest tamamlandi
+  };
+};
+
+export async function getCustomerProfile(
+  id: string
+): Promise<CustomerProfile | null> {
+  const supabase = await createServerSupabase();
+
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("id, ad, telefon, kampanya_izni, created_at")
+    .eq("id", id)
+    .maybeSingle();
+  if (!customer) return null;
+
+  const [{ data: appts }, { data: notes }] = await Promise.all([
+    supabase
+      .from("appointments")
+      .select(SELECT)
+      .eq("customer_id", id)
+      .order("tarih", { ascending: false })
+      .order("saat", { ascending: false }),
+    supabase
+      .from("notes")
+      .select("id, icerik, created_at")
+      .eq("customer_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const appointments = (appts ?? []).map(normalize);
+
+  let completed = 0;
+  let noShow = 0;
+  const visits: string[] = [];
+  for (const a of appointments) {
+    if (a.durum === "tamamlandi") {
+      completed++;
+      visits.push(a.tarih);
+    } else if (a.durum === "gelmedi") {
+      noShow++;
+    }
+  }
+  visits.sort();
+
+  return {
+    customer: customer as CustomerProfile["customer"],
+    appointments,
+    notes: (notes ?? []) as AppointmentNote[],
+    stats: {
+      total: appointments.length,
+      completed,
+      noShow,
+      firstVisit: visits[0] ?? null,
+      lastVisit: visits[visits.length - 1] ?? null,
+    },
+  };
 }
 
 export type ScheduleData = {

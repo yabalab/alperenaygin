@@ -13,6 +13,17 @@ export type CustomerLite = {
   telefon: string;
 };
 
+export type CustomerListRow = {
+  id: string;
+  ad: string;
+  telefon: string;
+  kampanya_izni: boolean;
+  /** Total appointments (any status). */
+  total: number;
+  /** Latest appointment date (any status) or null. */
+  lastAppt: string | null;
+};
+
 export type AppointmentRow = {
   id: string;
   tarih: string; // 'YYYY-MM-DD'

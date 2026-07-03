@@ -42,9 +42,21 @@ export default async function AppointmentDetailPage({
         <section className="rounded-xl border border-ink-deep/10 bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="font-display text-2xl font-light tracking-tight">
-                {a.customer?.ad ?? "— (müşteri silinmiş)"}
-              </h1>
+              {a.customer ? (
+                <Link
+                  href={`/yonetim/musteriler/${a.customer.id}`}
+                  className="group inline-flex items-baseline gap-1.5"
+                >
+                  <h1 className="font-display text-2xl font-light tracking-tight group-hover:underline">
+                    {a.customer.ad}
+                  </h1>
+                  <span className="font-body text-[13px] text-clay">→</span>
+                </Link>
+              ) : (
+                <h1 className="font-display text-2xl font-light tracking-tight">
+                  — (müşteri silinmiş)
+                </h1>
+              )}
               {a.customer && (
                 <p className="mt-1 font-body text-[14px] text-ink-soft/70">
                   <PhoneText phone={a.customer.telefon} />

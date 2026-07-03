@@ -1,15 +1,12 @@
 import Link from "next/link";
-import { getAppointments } from "@/lib/crm/queries";
-import { buildSlotCounts } from "@/lib/crm/counts";
-import AppointmentsBoard from "@/components/yonetim/AppointmentsBoard";
-import { logout } from "./actions";
+import { getCustomersWithStats } from "@/lib/crm/queries";
+import CustomersList from "@/components/yonetim/CustomersList";
+import { logout } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function YonetimPage() {
-  const appointments = await getAppointments();
-  // Per date+slot confirmed/pending counts, computed server-side.
-  const slotCounts = buildSlotCounts(appointments);
+export default async function CustomersPage() {
+  const customers = await getCustomersWithStats();
 
   return (
     <main className="min-h-svh bg-paper text-ink-deep">
@@ -20,15 +17,15 @@ export default async function YonetimPage() {
               Alperen Aygın
             </p>
             <h1 className="mt-0.5 font-display text-lg font-light tracking-tight">
-              Randevular
+              Müşteriler
             </h1>
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="/yonetim/musteriler"
+              href="/yonetim"
               className="font-body text-[12px] text-ink-soft transition-colors hover:text-ink-deep"
             >
-              Müşteriler
+              Randevular
             </Link>
             <form action={logout}>
               <button
@@ -43,16 +40,7 @@ export default async function YonetimPage() {
       </header>
 
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-        <Link
-          href="/yonetim/randevu/yeni"
-          className="mb-5 flex items-center justify-center gap-2 rounded-lg bg-ink-deep px-4 py-3.5 font-body text-[13px] uppercase tracking-label text-paper transition-opacity hover:opacity-90"
-        >
-          + Randevu Oluştur
-        </Link>
-        <AppointmentsBoard
-          appointments={appointments}
-          slotCounts={slotCounts}
-        />
+        <CustomersList customers={customers} />
       </div>
     </main>
   );
