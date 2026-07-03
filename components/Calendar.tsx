@@ -16,9 +16,15 @@ const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(
 type Props = {
   value: string | null;
   onSelect: (iso: string) => void;
+  /** ISO dates that are fully closed (blocked all day) → shown as passive. */
+  disabledDates?: string[];
 };
 
-export default function Calendar({ value, onSelect }: Props) {
+export default function Calendar({ value, onSelect, disabledDates }: Props) {
+  const disabledSet = useMemo(
+    () => new Set(disabledDates ?? []),
+    [disabledDates]
+  );
   const today = useMemo(() => midnight(new Date()), []);
   const maxDate = useMemo(() => {
     const d = new Date(today);
@@ -105,7 +111,8 @@ export default function Calendar({ value, onSelect }: Props) {
           if (d === null) return <div key={`b${i}`} />;
           const iso = toIso(view.year, view.month, d);
           const date = new Date(view.year, view.month, d);
-          const disabled = date < today || date > maxDate;
+          const disabled =
+            date < today || date > maxDate || disabledSet.has(iso);
           const selected = value === iso;
           const isToday = iso === todayIso;
 

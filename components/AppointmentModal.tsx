@@ -1,10 +1,22 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Calendar from "./Calendar";
+import TurnstileWidget from "./TurnstileWidget";
 import { formatTrPhone, isValidTrPhone, sanitizeTrPhone } from "@/lib/phone";
-import { SLOT_HOURS, getBookedSlots } from "@/lib/availability";
+import { SLOT_HOURS } from "@/lib/availability";
+import { submitBooking } from "@/app/actions/booking";
+import type { Availability } from "@/lib/booking";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const MORPH = { layout: { duration: 0.5, ease: EASE } };
@@ -28,6 +40,14 @@ export default function AppointmentModal({ source, onClose }: Props) {
   const [time, setTime] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<Availability | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [pending, startTransition] = useTransition();
+  // Time-trap baseline — set when the modal opens.
+  const openedAtRef = useRef<number>(0);
+
+  const onToken = useCallback((t: string) => setTurnstileToken(t), []);
 
   const reset = () => {
     setName("");
@@ -36,6 +56,8 @@ export default function AppointmentModal({ source, onClose }: Props) {
     setTime(null);
     setDone(false);
     setClosing(false);
+    setError(null);
+    setTurnstileToken("");
   };
 
   // Two-phase close: fade the content out first, then unmount so the panel
@@ -45,9 +67,17 @@ export default function AppointmentModal({ source, onClose }: Props) {
     setTimeout(onClose, 200);
   };
 
-  // ESC to close + lock background scroll while open.
+  // ESC to close + lock background scroll while open. Also: on open, stamp the
+  // time-trap baseline and fetch real availability once.
   useEffect(() => {
     if (!source) return;
+    openedAtRef.current = Date.now();
+    if (!availability) {
+      fetch("/api/availability")
+        .then((r) => r.json())
+        .then((a: Availability) => setAvailability(a))
+        .catch(() => {});
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleClose();
     };
@@ -61,14 +91,34 @@ export default function AppointmentModal({ source, onClose }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
 
-  const booked = date ? getBookedSlots(date) : [];
+  // Real availability for the selected day (whole-day closed → all slots full).
+  const fullDays = availability?.fullDays ?? [];
+  const booked = date
+    ? fullDays.includes(date)
+      ? SLOT_HOURS
+      : (availability?.bookedByDate[date] ?? [])
+    : [];
   const canSubmit =
     name.trim() !== "" && isValidTrPhone(phone) && !!date && !!time;
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!canSubmit) return;
-    setDone(true); // NOTE: no backend — fake success (backend track handles this).
+    if (!canSubmit || pending) return;
+    setError(null);
+
+    const fd = new FormData(e.currentTarget); // picks up honeypot field
+    fd.set("name", name);
+    fd.set("phone", phone);
+    fd.set("tarih", date ?? "");
+    fd.set("saat", time ?? "");
+    fd.set("formTs", String(openedAtRef.current));
+    fd.set("cf-turnstile-response", turnstileToken);
+
+    startTransition(async () => {
+      const res = await submitBooking(fd);
+      if (res.ok) setDone(true);
+      else setError(res.error);
+    });
   };
 
   const contentVisible = !!source && !closing;
@@ -154,6 +204,16 @@ export default function AppointmentModal({ source, onClose }: Props) {
                   </p>
 
                   <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-6">
+                    {/* Honeypot — hidden from users; bots that fill it get rejected. */}
+                    <input
+                      type="text"
+                      name="sirket"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                      className="absolute left-[-9999px] top-[-9999px] h-0 w-0 opacity-0"
+                    />
+
                     <label className="flex flex-col gap-2">
                       <span className={labelCls}>Ad *</span>
                       <input
@@ -182,6 +242,7 @@ export default function AppointmentModal({ source, onClose }: Props) {
                       <span className={labelCls}>Gün</span>
                       <Calendar
                         value={date}
+                        disabledDates={fullDays}
                         onSelect={(iso) => {
                           setDate(iso);
                           setTime(null); // slots depend on the day
@@ -229,12 +290,26 @@ export default function AppointmentModal({ source, onClose }: Props) {
                       )}
                     </div>
 
+                    {/* Bot koruması — az müdahaleci, çoğu ziyaretçiye görünmez. */}
+                    {TURNSTILE_SITE_KEY && (
+                      <TurnstileWidget
+                        siteKey={TURNSTILE_SITE_KEY}
+                        onToken={onToken}
+                      />
+                    )}
+
+                    {error && (
+                      <p className="font-body text-[13px] text-[#e6a5a0]">
+                        {error}
+                      </p>
+                    )}
+
                     <button
                       type="submit"
-                      disabled={!canSubmit}
+                      disabled={!canSubmit || pending}
                       className="mt-1 inline-flex items-center justify-center gap-[10px] self-start rounded-full bg-paper px-7 pb-4 pt-[17px] font-body text-[10.5px] font-light uppercase tracking-label text-ink-deep transition-all duration-500 ease-smooth enabled:hover:bg-gold disabled:cursor-not-allowed disabled:opacity-30"
                     >
-                      Randevuyu oluştur{" "}
+                      {pending ? "Gönderiliyor…" : "Randevuyu oluştur"}{" "}
                       <span className="font-accent text-[15px] tracking-normal">
                         →
                       </span>
