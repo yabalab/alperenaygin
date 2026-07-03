@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
+import StyledMap from "./StyledMap";
 
 const WA = "https://wa.me/905354838997";
 const TEL = "tel:+905354838997";
@@ -216,20 +217,20 @@ export default function Contact() {
             </div>
 
             <div className="flex flex-col gap-[6px]">
-              <span className={detailLabelCls}>Instagram / Harita</span>
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href={IG}
-                  target="_blank"
-                  rel="noopener"
-                  className={detailLinkCls}
-                >
-                  @alperenayginhairstudio
-                </a>
-                <span className="font-accent text-[17.5px] italic text-[rgba(28,27,23,0.55)]">
-                  [Google Maps linki]
-                </span>
-              </div>
+              <span className={detailLabelCls}>Instagram</span>
+              <a
+                href={IG}
+                target="_blank"
+                rel="noopener"
+                className={`${detailLinkCls} self-start`}
+              >
+                @alperenayginhairstudio
+              </a>
+            </div>
+
+            <div className="flex flex-col gap-[10px]">
+              <span className={detailLabelCls}>Harita</span>
+              <StyledMap />
             </div>
 
             <p className="mt-2 font-body text-[9px] font-light uppercase tracking-label text-[rgba(28,27,23,0.45)]">
