@@ -70,12 +70,13 @@ export default function Proof({ items }: { items: ProofItem[] }) {
 
   useEffect(() => () => Fancybox.close(), []);
 
-  // Delegated click → open Fancybox at the clicked item's "after" image.
+  // Delegated click → open Fancybox at the exact photo clicked (each photo
+  // carries its own gallery index: before = i*2, after = i*2+1).
   const onCarouselClick = (e: MouseEvent<HTMLDivElement>) => {
-    const card = (e.target as HTMLElement).closest("[data-proof-index]");
-    if (!card) return;
-    const i = Number(card.getAttribute("data-proof-index"));
-    Fancybox.show(gallery, { startIndex: i * 2 + 1 });
+    const photo = (e.target as HTMLElement).closest("[data-fancy-index]");
+    if (!photo) return;
+    const i = Number(photo.getAttribute("data-fancy-index"));
+    Fancybox.show(gallery, { startIndex: i });
   };
 
   return (
@@ -103,7 +104,7 @@ export default function Proof({ items }: { items: ProofItem[] }) {
         <div
           ref={carouselRef}
           onClick={onCarouselClick}
-          className="mx-auto mt-[clamp(44px,6vw,72px)] w-full max-w-[680px]"
+          className="mx-auto mt-[clamp(44px,6vw,72px)] w-full max-w-[1160px]"
         >
           <Swiper
             onSwiper={(s) => {
@@ -117,16 +118,17 @@ export default function Proof({ items }: { items: ProofItem[] }) {
                 draggingRef.current = false;
               }, 60);
             }}
-            // mobile: one full-width item; desktop: fixed-width item so the
-            // neighbours' edges peek at the sides.
-            slidesPerView="auto"
-            centeredSlides
+            // mobile: one card at a time; desktop: a 3-up row filling the width.
+            slidesPerView={1}
             spaceBetween={24}
+            breakpoints={{
+              768: { slidesPerView: 3, spaceBetween: 28 },
+            }}
             loop
             grabCursor
           >
             {items.map((item, i) => (
-              <SwiperSlide key={i} className="!h-auto !w-full py-2 md:!w-[380px]">
+              <SwiperSlide key={i} className="!h-auto py-2">
                 <ProofCard item={item} index={i} />
               </SwiperSlide>
             ))}

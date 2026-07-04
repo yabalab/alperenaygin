@@ -10,7 +10,7 @@ const MORPH = { layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } };
 const NAV_LINKS = [
   { href: "#modeller", label: "Modeller" },
   { href: "#surec", label: "Süreç" },
-  { href: "#kanit", label: "Kanıt" },
+  { href: "#kanit", label: "Uygulamalar" },
   { href: "#iletisim", label: "İletişim" },
 ];
 

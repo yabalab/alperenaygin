@@ -20,13 +20,13 @@ export default function ProofCard({
 }) {
   return (
     <figure className="m-0 flex flex-col items-center">
-      {/* click handled by delegation on the parent (survives Swiper loop clones) */}
-      <div
-        data-proof-index={index}
-        className="proof-card group relative aspect-[1/1.16] w-[min(100%,380px)] cursor-zoom-in"
-      >
+      {/* Fancybox click delegated on the parent (survives Swiper loop clones).
+          Each photo carries its own gallery index: before = index*2, after
+          = index*2+1 — so clicking a photo opens THAT photo. */}
+      <div className="proof-card group relative aspect-[1/1.16] w-[min(100%,380px)] cursor-zoom-in">
         {/* before — back, revealed on the left */}
         <div
+          data-fancy-index={index * 2}
           className="proof-drift-before absolute left-0 top-[6%] w-[76%]"
           style={{ transform: "translateX(calc(-20px * var(--drift, 0)))" }}
         >
@@ -55,6 +55,7 @@ export default function ProofCard({
 
         {/* after — front, on top */}
         <div
+          data-fancy-index={index * 2 + 1}
           className="proof-drift-after absolute right-0 top-0 w-[78%]"
           style={{ transform: "translateX(calc(20px * var(--drift, 0)))" }}
         >
