@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { TRUST_COOKIE, trustFromValue, withPersistence } from "./cookie-persist";
 
 /**
  * Runs on every /yonetim request: refreshes the admin session cookies (so the
@@ -22,12 +23,21 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
+          const persistent = trustFromValue(
+            request.cookies.get(TRUST_COOKIE)?.value
+          );
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(
+              name,
+              value,
+              name.startsWith("sb-")
+                ? withPersistence(options, persistent)
+                : options
+            )
           );
         },
       },

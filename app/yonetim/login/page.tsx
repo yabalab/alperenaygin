@@ -47,6 +47,18 @@ export default function LoginPage() {
             />
           </label>
 
+          <label className="flex items-center gap-2.5 select-none">
+            <input
+              type="checkbox"
+              name="trust"
+              defaultChecked
+              className="h-4 w-4 accent-ink-deep"
+            />
+            <span className="font-body text-[13px] text-ink-soft/80">
+              Bu cihaza güven — uzun süre girişli kal
+            </span>
+          </label>
+
           {state.error && (
             <p className="font-body text-[13px] text-red-700">{state.error}</p>
           )}

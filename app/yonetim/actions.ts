@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { TRUST_COOKIE } from "@/lib/supabase/cookie-persist";
 import { ALL_STATUSES } from "@/lib/crm/status";
 import type { AppointmentStatus } from "@/lib/crm/types";
 import { sanitizeTrPhone, isValidTrPhone } from "@/lib/phone";
@@ -12,6 +14,8 @@ import { packValue } from "@/lib/cms/value";
 export async function logout() {
   const supabase = await createServerSupabase();
   await supabase.auth.signOut();
+  // Drop the "trust this device" preference too.
+  (await cookies()).delete(TRUST_COOKIE);
   revalidatePath("/yonetim", "layout");
   redirect("/yonetim/login");
 }
