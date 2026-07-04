@@ -14,6 +14,8 @@ import Footer from "@/components/Footer";
 import RandevuChip from "@/components/RandevuChip";
 import { getSiteContent } from "@/lib/cms/queries";
 import { getSiteMedia } from "@/lib/cms/media-queries";
+import { getBeforeAfter, toProofItems } from "@/lib/cms/before-after";
+import { PROOF_FALLBACK } from "@/lib/proof-items";
 import { ContentProvider } from "@/components/cms/ContentProvider";
 import { MediaProvider } from "@/components/cms/MediaProvider";
 
@@ -22,10 +24,16 @@ import { MediaProvider } from "@/components/cms/MediaProvider";
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [content, media] = await Promise.all([
+  const [content, media, beforeAfter] = await Promise.all([
     getSiteContent(),
     getSiteMedia(),
+    getBeforeAfter(),
   ]);
+
+  // Live cards, or the static fallback when none are active yet (so the
+  // Kanıt section never looks empty).
+  const proofItems = toProofItems(beforeAfter);
+  const proof = proofItems.length ? proofItems : PROOF_FALLBACK;
 
   return (
     <ContentProvider content={content}>
@@ -43,7 +51,7 @@ export default async function Home() {
       <Hero />
       <TrustStrip />
       <WhatIsIt />
-      <Proof />
+      <Proof items={proof} />
       <Instagram />
       <Models />
       <Process />

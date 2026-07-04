@@ -2,9 +2,14 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import sharp from "sharp";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MEDIA_SIZES } from "@/lib/cms/media";
+import {
+  MEDIA_BUCKET,
+  MAX_IMAGE_BYTES,
+  uploadImageSizes,
+  removeImageSizes,
+} from "@/lib/cms/image-pipeline";
 
 export type MediaActionState = { ok: boolean; error: string | null };
 
@@ -21,9 +26,6 @@ const ALLOWED: Record<string, { oran: string }> = {
   model_3: { oran: "1:1" },
 };
 
-const BUCKET = "site-media";
-const MAX_BYTES = 6 * 1024 * 1024;
-
 /** Remove all size files + media rows for an alan (keeps Storage clean). */
 async function purgeAlan(
   supabase: ReturnType<typeof createAdminClient>,
@@ -36,7 +38,7 @@ async function purgeAlan(
   const paths = (rows ?? []).flatMap((r) =>
     MEDIA_SIZES.map((w) => `${r.storage_path}-${w}.webp`)
   );
-  if (paths.length) await supabase.storage.from(BUCKET).remove(paths);
+  if (paths.length) await supabase.storage.from(MEDIA_BUCKET).remove(paths);
   if (rows?.length) await supabase.from("media").delete().eq("alan", alan);
 }
 
@@ -52,7 +54,7 @@ export async function uploadMedia(
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, error: "Görsel bulunamadı." };
   }
-  if (file.size > MAX_BYTES) {
+  if (file.size > MAX_IMAGE_BYTES) {
     return { ok: false, error: "Görsel çok büyük." };
   }
 
@@ -63,31 +65,9 @@ export async function uploadMedia(
   let width: number | null = null;
   let height: number | null = null;
   try {
-    for (const w of MEDIA_SIZES) {
-      const out = await sharp(input)
-        .resize({ width: w, withoutEnlargement: true })
-        .webp({ quality: 80 })
-        .toBuffer();
-      if (w === 1200) {
-        // Actual dimensions of the largest output (withoutEnlargement may keep
-        // it smaller than 1200 for a low-res source).
-        const m = await sharp(out).metadata();
-        width = m.width ?? null;
-        height = m.height ?? null;
-      }
-      const { error } = await supabase.storage
-        .from(BUCKET)
-        .upload(`${base}-${w}.webp`, out, {
-          contentType: "image/webp",
-          upsert: true,
-        });
-      if (error) throw error;
-    }
+    ({ width, height } = await uploadImageSizes(supabase, base, input));
   } catch {
-    // roll back any files we just wrote
-    await supabase.storage
-      .from(BUCKET)
-      .remove(MEDIA_SIZES.map((w) => `${base}-${w}.webp`));
+    await removeImageSizes(supabase, base); // roll back any files we wrote
     return { ok: false, error: "Görsel işlenemedi, lütfen tekrar deneyin." };
   }
 

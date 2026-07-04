@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, type MouseEvent } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperClass } from "swiper";
 import "swiper/css";
@@ -10,19 +10,30 @@ import { motion } from "framer-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
 import ProofCard from "./ProofCard";
-import { PROOF_ITEMS } from "@/lib/proof-items";
+import type { ProofItem } from "@/lib/proof-items";
+import { mediaSizeUrl } from "@/lib/cms/media";
+import { useT } from "./cms/ContentProvider";
 import MaskReveal from "./MaskReveal";
 
 const IG_URL = "https://instagram.com/alperenayginhairstudio";
 
-// Lightbox gallery: before + after of every item, in order.
-const GALLERY = PROOF_ITEMS.flatMap((it) => [
-  { src: it.before, type: "image" as const, alt: it.beforeAlt },
-  { src: it.after, type: "image" as const, alt: it.afterAlt },
-]);
+// Full-res URL for the lightbox: remote items resolve to the largest webp.
+const fullSrc = (src: string, remote?: boolean) =>
+  remote ? mediaSizeUrl(src, 1200) : src;
 
-export default function Proof() {
+export default function Proof({ items }: { items: ProofItem[] }) {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
+
+  // Lightbox gallery: before + after of every item, in order.
+  const gallery = useMemo(
+    () =>
+      items.flatMap((it) => [
+        { src: fullSrc(it.before, it.remote), type: "image" as const, alt: it.beforeAlt },
+        { src: fullSrc(it.after, it.remote), type: "image" as const, alt: it.afterAlt },
+      ]),
+    [items]
+  );
   const carouselRef = useRef<HTMLDivElement>(null);
   const swiperRef = useRef<SwiperClass | null>(null);
   const draggingRef = useRef(false);
@@ -64,7 +75,7 @@ export default function Proof() {
     const card = (e.target as HTMLElement).closest("[data-proof-index]");
     if (!card) return;
     const i = Number(card.getAttribute("data-proof-index"));
-    Fancybox.show(GALLERY, { startIndex: i * 2 + 1 });
+    Fancybox.show(gallery, { startIndex: i * 2 + 1 });
   };
 
   return (
@@ -78,14 +89,13 @@ export default function Proof() {
         <motion.div {...revealProps} className="max-w-[640px]">
           <div className="mb-4 h-px w-[30px] bg-gold" />
           <div className="font-body text-[10.5px] font-light uppercase tracking-label text-clay">
-            Uygulamalarımız
+            {t("kanit.eyebrow")}
           </div>
           <MaskReveal className="mt-[18px] font-display text-[clamp(30px,3.2vw,44px)] font-[380] leading-[1.08] tracking-tight [text-wrap:balance]">
-            Öncesi ve sonrası
+            {t("kanit.title")}
           </MaskReveal>
           <p className="mt-5 font-body text-[clamp(17px,1.4vw,19.5px)] leading-[1.7] text-[rgba(28,27,23,0.78)] [text-wrap:pretty]">
-            Aşağıdakiler gerçek. Kadraj her zaman kusursuz değil — çünkü bunlar
-            stüdyo değil, atölye.
+            {t("kanit.subtitle")}
           </p>
         </motion.div>
 
@@ -115,7 +125,7 @@ export default function Proof() {
             loop
             grabCursor
           >
-            {PROOF_ITEMS.map((item, i) => (
+            {items.map((item, i) => (
               <SwiperSlide key={i} className="!h-auto !w-full py-2 md:!w-[380px]">
                 <ProofCard item={item} index={i} />
               </SwiperSlide>

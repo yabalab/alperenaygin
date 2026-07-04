@@ -96,6 +96,15 @@ const SECTIONS_DEF: SectionDef[] = [
     ],
   },
   {
+    id: "kanit",
+    title: "Kanıt (Önce/Sonra)",
+    fields: [
+      { key: "kanit.eyebrow", label: "Üst etiket", type: "text", default: "Uygulamalarımız" },
+      { key: "kanit.title", label: "Başlık", type: "text", default: "Öncesi ve sonrası" },
+      { key: "kanit.subtitle", label: "Alt başlık", type: "textarea", default: "Aşağıdakiler gerçek. Kadraj her zaman kusursuz değil — çünkü bunlar stüdyo değil, atölye." },
+    ],
+  },
+  {
     id: "usta",
     title: "Usta",
     fields: [

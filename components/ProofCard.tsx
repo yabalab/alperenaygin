@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import type { ProofItem } from "@/lib/proof-items";
+import { mediaLoader } from "@/lib/cms/media";
 
 /**
  * A before/after polaroid pair. Three composed transform layers so the effects
@@ -37,6 +38,7 @@ export default function ProofCard({
               <div className="relative aspect-square w-full">
                 <Image
                   src={item.before}
+                  loader={item.remote ? mediaLoader : undefined}
                   alt={item.beforeAlt}
                   fill
                   draggable={false}
@@ -64,6 +66,7 @@ export default function ProofCard({
               <div className="relative aspect-square w-full">
                 <Image
                   src={item.after}
+                  loader={item.remote ? mediaLoader : undefined}
                   alt={item.afterAlt}
                   fill
                   draggable={false}
