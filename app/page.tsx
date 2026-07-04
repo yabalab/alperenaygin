@@ -13,6 +13,7 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import RandevuChip from "@/components/RandevuChip";
 import { getSiteContent } from "@/lib/cms/queries";
+import { getSiteMedia } from "@/lib/cms/media-queries";
 import { ContentProvider } from "@/components/cms/ContentProvider";
 
 // ISR: serve cached HTML, refresh content at most hourly. CMS saves call
@@ -20,7 +21,10 @@ import { ContentProvider } from "@/components/cms/ContentProvider";
 export const revalidate = 3600;
 
 export default async function Home() {
-  const content = await getSiteContent();
+  const [content, media] = await Promise.all([
+    getSiteContent(),
+    getSiteMedia(),
+  ]);
 
   return (
     <ContentProvider content={content}>
@@ -42,7 +46,7 @@ export default async function Home() {
       <Models />
       <Process />
       <Studio />
-      <Master />
+      <Master portrait={media.usta ?? null} />
       <Faq />
       <Contact />
       <Footer />

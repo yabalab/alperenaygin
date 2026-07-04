@@ -3,16 +3,41 @@
 import { useActionState, useState } from "react";
 import { updateContent, type UpdateContentState } from "@/app/yonetim/actions";
 import { CMS_SECTIONS, type CmsSection } from "@/lib/cms/content";
+import type { MediaRow } from "@/lib/cms/media";
+import ImageField from "./ImageField";
 
 const initial: UpdateContentState = { ok: false, error: null };
 
+// Per-section image slots (media). Pilot: only the Usta portrait.
+type MediaFieldDef = {
+  alan: string;
+  label: string;
+  aspect: number;
+  oran: string;
+  fallbackSrc: string;
+};
+const MEDIA_FIELDS: Record<string, MediaFieldDef[]> = {
+  usta: [
+    {
+      alan: "usta",
+      label: "Portre",
+      aspect: 3 / 4,
+      oran: "3:4",
+      fallbackSrc: "/images/alperen-portre.png",
+    },
+  ],
+};
+
 export default function ContentEditor({
   values,
+  media,
 }: {
   values: Record<string, string>;
+  media: Record<string, MediaRow>;
 }) {
   const [activeId, setActiveId] = useState(CMS_SECTIONS[0].id);
   const active = CMS_SECTIONS.find((s) => s.id === activeId)!;
+  const mediaFields = MEDIA_FIELDS[activeId] ?? [];
 
   return (
     <div>
@@ -33,6 +58,23 @@ export default function ContentEditor({
           </button>
         ))}
       </div>
+
+      {/* Image slots for this section (media), above the text form. */}
+      {mediaFields.length > 0 && (
+        <div className="mt-6 flex flex-col gap-4">
+          {mediaFields.map((m) => (
+            <ImageField
+              key={m.alan}
+              alan={m.alan}
+              label={m.label}
+              aspect={m.aspect}
+              oran={m.oran}
+              current={media[m.alan] ?? null}
+              fallbackSrc={m.fallbackSrc}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Keyed so each section form remounts fresh (inputs + save state reset). */}
       <SectionForm key={active.id} section={active} values={values} />

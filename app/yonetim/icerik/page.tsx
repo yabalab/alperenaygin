@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSiteContent } from "@/lib/cms/queries";
+import { getSiteMedia } from "@/lib/cms/media-queries";
 import ContentEditor from "@/components/yonetim/ContentEditor";
 import { logout } from "../actions";
 
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ContentPage() {
   // Current effective values (saved DB values over hardcoded defaults).
-  const values = await getSiteContent();
+  const [values, media] = await Promise.all([getSiteContent(), getSiteMedia()]);
 
   return (
     <main className="min-h-svh bg-paper text-ink-deep">
@@ -45,7 +46,7 @@ export default async function ContentPage() {
           Bir bölüm seçin, metinleri düzenleyip kaydedin. Boş bırakılan alan
           sitede varsayılan metne döner.
         </p>
-        <ContentEditor values={values} />
+        <ContentEditor values={values} media={media} />
       </div>
     </main>
   );

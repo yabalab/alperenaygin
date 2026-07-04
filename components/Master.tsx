@@ -7,8 +7,9 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
 import { useT } from "./cms/ContentProvider";
+import { mediaLoader, type MediaRow } from "@/lib/cms/media";
 
-export default function Master() {
+export default function Master({ portrait }: { portrait?: MediaRow | null }) {
   const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
   const portraitRef = useRef<HTMLImageElement>(null);
@@ -68,16 +69,26 @@ export default function Master() {
           />
           <Image
             ref={portraitRef}
-            src="/images/alperen-portre.png"
             alt="Alperen Aygın — kollar kavuşturulmuş portre"
-            width={1024}
-            height={1536}
+            sizes="(min-width: 960px) 420px, 100vw"
             className="relative z-[1] block h-auto w-full"
             style={{
               WebkitMaskImage:
                 "linear-gradient(to bottom,#000 80%,transparent 100%)",
               maskImage: "linear-gradient(to bottom,#000 80%,transparent 100%)",
             }}
+            {...(portrait
+              ? {
+                  loader: mediaLoader,
+                  src: portrait.storage_path,
+                  width: portrait.genislik ?? 1200,
+                  height: portrait.yukseklik ?? 1600,
+                }
+              : {
+                  src: "/images/alperen-portre.png",
+                  width: 1024,
+                  height: 1536,
+                })}
           />
         </motion.div>
 
