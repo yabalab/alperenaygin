@@ -29,10 +29,16 @@ export async function uploadImageSizes(
   let width: number | null = null;
   let height: number | null = null;
   for (const w of MEDIA_SIZES) {
-    const out = await sharp(input)
-      .resize({ width: w, withoutEnlargement: true })
-      .webp({ quality: 80 })
-      .toBuffer();
+    let out: Buffer;
+    try {
+      out = await sharp(input)
+        .resize({ width: w, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+    } catch (e) {
+      // e.g. sharp native binary missing on the serverless runtime.
+      throw new Error(`sharp işleme hatası (${w}px): ${errMessage(e)}`);
+    }
     if (w === 1200) {
       // Actual dimensions of the largest output (withoutEnlargement may keep
       // it smaller than 1200 for a low-res source).
@@ -40,15 +46,33 @@ export async function uploadImageSizes(
       width = m.width ?? null;
       height = m.height ?? null;
     }
+    const path = `${base}-${w}.webp`;
+    // Upload a Blob (not a raw Buffer): the most portable body across the Node
+    // and serverless runtimes — avoids "no error but empty/not-persisted"
+    // upload quirks with raw Buffers.
     const { error } = await supabase.storage
       .from(MEDIA_BUCKET)
-      .upload(`${base}-${w}.webp`, out, {
+      .upload(path, new Blob([new Uint8Array(out)], { type: "image/webp" }), {
         contentType: "image/webp",
         upsert: true,
       });
-    if (error) throw error;
+    if (error) {
+      // Surface the REAL storage error (permission, bucket, auth, size…).
+      throw new Error(`Storage upload hatası (${path}): ${error.message}`);
+    }
   }
   return { width, height };
+}
+
+/** Normalize any thrown value to a readable message. */
+export function errMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
 }
 
 /** Delete every pre-generated size file for a base path (rollback / cleanup). */

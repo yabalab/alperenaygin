@@ -7,6 +7,7 @@ import {
   MAX_IMAGE_BYTES,
   uploadImageSizes,
   removeImageSizes,
+  errMessage,
 } from "@/lib/cms/image-pipeline";
 
 export type IGActionState = { ok: boolean; error: string | null };
@@ -37,9 +38,10 @@ export async function createInstagram(
   let dim;
   try {
     dim = await uploadImageSizes(supabase, base, Buffer.from(await file.arrayBuffer()));
-  } catch {
-    await removeImageSizes(supabase, base);
-    return { ok: false, error: "Görsel işlenemedi, lütfen tekrar deneyin." };
+  } catch (e) {
+    console.error("[createInstagram] storage upload failed:", e);
+    await removeImageSizes(supabase, base).catch(() => {});
+    return { ok: false, error: `Görsel yüklenemedi: ${errMessage(e)}` };
   }
 
   const { data: last } = await supabase

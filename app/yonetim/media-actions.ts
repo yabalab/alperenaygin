@@ -9,6 +9,7 @@ import {
   MAX_IMAGE_BYTES,
   uploadImageSizes,
   removeImageSizes,
+  errMessage,
 } from "@/lib/cms/image-pipeline";
 
 export type MediaActionState = { ok: boolean; error: string | null };
@@ -59,21 +60,37 @@ export async function uploadMedia(
   }
 
   const input = Buffer.from(await file.arrayBuffer());
-  const supabase = createAdminClient();
+
+  // Admin (service_role) client — bypasses RLS for the Storage write + DB insert.
+  let supabase: ReturnType<typeof createAdminClient>;
+  try {
+    supabase = createAdminClient();
+  } catch (e) {
+    console.error("[uploadMedia] admin client:", e);
+    return {
+      ok: false,
+      error:
+        "Sunucu yapılandırma hatası (SUPABASE_SERVICE_ROLE_KEY eksik/yanlış olabilir).",
+    };
+  }
+
   const base = `${alan}/${randomUUID()}`;
 
+  // 1) Storage FIRST — only record in the DB if the files really landed.
   let width: number | null = null;
   let height: number | null = null;
   try {
     ({ width, height } = await uploadImageSizes(supabase, base, input));
-  } catch {
-    await removeImageSizes(supabase, base); // roll back any files we wrote
-    return { ok: false, error: "Görsel işlenemedi, lütfen tekrar deneyin." };
+  } catch (e) {
+    console.error("[uploadMedia] storage upload failed:", e);
+    await removeImageSizes(supabase, base).catch(() => {}); // roll back
+    return { ok: false, error: `Görsel yüklenemedi: ${errMessage(e)}` };
   }
 
-  // Replace the previous image for this alan (delete old files + row).
+  // 2) Replace the previous image for this alan (delete old files + row).
   await purgeAlan(supabase, alan);
 
+  // 3) DB record — only now that the Storage files exist.
   const { error } = await supabase.from("media").insert({
     storage_path: base,
     alan,
@@ -81,7 +98,11 @@ export async function uploadMedia(
     genislik: width,
     yukseklik: height,
   });
-  if (error) return { ok: false, error: "Kaydedilemedi." };
+  if (error) {
+    console.error("[uploadMedia] db insert failed:", error);
+    await removeImageSizes(supabase, base).catch(() => {}); // don't orphan files
+    return { ok: false, error: `Kayıt yazılamadı: ${error.message}` };
+  }
 
   revalidatePath("/");
   revalidatePath("/yonetim/icerik");

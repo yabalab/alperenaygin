@@ -46,12 +46,20 @@ export default function ImageField({
     fd.append("alan", alan);
     fd.append("oran", oran);
     startTransition(async () => {
-      const res = await uploadMedia(fd);
-      if (res.ok) {
-        setCropSrc(null);
-        router.refresh();
-      } else {
-        setError(res.error);
+      try {
+        const res = await uploadMedia(fd);
+        if (res.ok) {
+          setCropSrc(null);
+          router.refresh();
+        } else {
+          setError(res.error);
+          setCropSrc(null);
+        }
+      } catch (e) {
+        // A thrown (not returned) server action must never fail silently.
+        setError(
+          e instanceof Error ? `Hata: ${e.message}` : "Beklenmeyen yükleme hatası."
+        );
         setCropSrc(null);
       }
     });

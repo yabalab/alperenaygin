@@ -7,6 +7,7 @@ import {
   MAX_IMAGE_BYTES,
   uploadImageSizes,
   removeImageSizes,
+  errMessage,
 } from "@/lib/cms/image-pipeline";
 
 export type BAActionState = { ok: boolean; error: string | null };
@@ -53,10 +54,11 @@ export async function createBeforeAfter(
     ]);
     oDim = await uploadImageSizes(supabase, oncesiBase, Buffer.from(ob));
     sDim = await uploadImageSizes(supabase, sonrasiBase, Buffer.from(sb));
-  } catch {
-    await removeImageSizes(supabase, oncesiBase);
-    await removeImageSizes(supabase, sonrasiBase);
-    return { ok: false, error: "Görsel işlenemedi, lütfen tekrar deneyin." };
+  } catch (e) {
+    console.error("[createBeforeAfter] storage upload failed:", e);
+    await removeImageSizes(supabase, oncesiBase).catch(() => {});
+    await removeImageSizes(supabase, sonrasiBase).catch(() => {});
+    return { ok: false, error: `Görsel yüklenemedi: ${errMessage(e)}` };
   }
 
   // Append to the end of the list.
