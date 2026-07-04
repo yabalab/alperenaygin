@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSiteContent } from "@/lib/cms/queries";
 import { getSiteMedia } from "@/lib/cms/media-queries";
 import { getAllBeforeAfter } from "@/lib/cms/before-after";
+import { getAllInstagram } from "@/lib/cms/instagram";
 import ContentEditor from "@/components/yonetim/ContentEditor";
 import { logout } from "../actions";
 
@@ -9,10 +10,11 @@ export const dynamic = "force-dynamic";
 
 export default async function ContentPage() {
   // Current effective values (saved DB values over hardcoded defaults).
-  const [values, media, beforeAfter] = await Promise.all([
+  const [values, media, beforeAfter, instagram] = await Promise.all([
     getSiteContent(),
     getSiteMedia(),
     getAllBeforeAfter(),
+    getAllInstagram(),
   ]);
 
   return (
@@ -51,7 +53,12 @@ export default async function ContentPage() {
           Bir bölüm seçin, metinleri düzenleyip kaydedin. Boş bırakılan alan
           sitede varsayılan metne döner.
         </p>
-        <ContentEditor values={values} media={media} beforeAfter={beforeAfter} />
+        <ContentEditor
+          values={values}
+          media={media}
+          beforeAfter={beforeAfter}
+          instagram={instagram}
+        />
       </div>
     </main>
   );

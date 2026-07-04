@@ -105,6 +105,13 @@ const SECTIONS_DEF: SectionDef[] = [
     ],
   },
   {
+    id: "instagram",
+    title: "Instagram",
+    fields: [
+      { key: "instagram.handle", label: "Kullanıcı adı (bantta gösterilen)", type: "text", default: "@alperenayginhairstudio" },
+    ],
+  },
+  {
     id: "usta",
     title: "Usta",
     fields: [

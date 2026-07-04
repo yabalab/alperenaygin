@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type MouseEvent } from "react";
+import { useMemo, useRef, type MouseEvent } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperClass } from "swiper";
@@ -10,18 +10,29 @@ import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import { motion } from "framer-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
-import { INSTAGRAM_POSTS, INSTAGRAM_URL } from "@/lib/instagram";
+import { INSTAGRAM_URL, type InstagramPost } from "@/lib/instagram";
+import { mediaLoader, mediaSizeUrl } from "@/lib/cms/media";
+import { useT } from "./cms/ContentProvider";
 
-const GALLERY = INSTAGRAM_POSTS.map((p) => ({
-  src: p.src,
-  type: "image" as const,
-  alt: p.alt,
-}));
+// Full-res URL for the lightbox: remote items resolve to the largest webp.
+const fullSrc = (src: string, remote?: boolean) =>
+  remote ? mediaSizeUrl(src, 1200) : src;
 
-export default function Instagram() {
+export default function Instagram({ items }: { items: InstagramPost[] }) {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
   const driftRef = useRef<HTMLDivElement>(null);
   const swiperRef = useRef<SwiperClass | null>(null);
+
+  const gallery = useMemo(
+    () =>
+      items.map((p) => ({
+        src: fullSrc(p.src, p.remote),
+        type: "image" as const,
+        alt: p.alt,
+      })),
+    [items]
+  );
 
   // Very light scroll-linked horizontal drift (no auto-scroll). scrub → idle at
   // rest; sets transform (composited) so backdrop-blurs never stall it.
@@ -47,7 +58,7 @@ export default function Instagram() {
     { scope: sectionRef }
   );
 
-  const openAt = (i: number) => Fancybox.show(GALLERY, { startIndex: i });
+  const openAt = (i: number) => Fancybox.show(gallery, { startIndex: i });
 
   return (
     <section
@@ -68,7 +79,7 @@ export default function Instagram() {
               rel="noopener"
               className="border-b border-[rgba(184,149,106,0.5)] normal-case text-clay transition-colors hover:text-gold"
             >
-              @alperenayginhairstudio
+              {t("instagram.handle")}
             </a>
           </p>
 
@@ -106,7 +117,7 @@ export default function Instagram() {
             1024: { slidesPerView: 5.3, spaceBetween: 18 },
           }}
         >
-          {INSTAGRAM_POSTS.map((post, i) => (
+          {items.map((post, i) => (
             <SwiperSlide key={post.src + i}>
               <button
                 type="button"
@@ -119,6 +130,7 @@ export default function Instagram() {
               >
                 <Image
                   src={post.src}
+                  loader={post.remote ? mediaLoader : undefined}
                   alt={post.alt}
                   fill
                   draggable={false}

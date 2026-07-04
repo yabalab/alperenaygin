@@ -16,6 +16,8 @@ import { getSiteContent } from "@/lib/cms/queries";
 import { getSiteMedia } from "@/lib/cms/media-queries";
 import { getBeforeAfter, toProofItems } from "@/lib/cms/before-after";
 import { PROOF_FALLBACK } from "@/lib/proof-items";
+import { getInstagram, toInstagramItems } from "@/lib/cms/instagram";
+import { INSTAGRAM_FALLBACK } from "@/lib/instagram";
 import { ContentProvider } from "@/components/cms/ContentProvider";
 import { MediaProvider } from "@/components/cms/MediaProvider";
 
@@ -24,16 +26,21 @@ import { MediaProvider } from "@/components/cms/MediaProvider";
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [content, media, beforeAfter] = await Promise.all([
+  const [content, media, beforeAfter, instagram] = await Promise.all([
     getSiteContent(),
     getSiteMedia(),
     getBeforeAfter(),
+    getInstagram(),
   ]);
 
   // Live cards, or the static fallback when none are active yet (so the
   // Kanıt section never looks empty).
   const proofItems = toProofItems(beforeAfter);
   const proof = proofItems.length ? proofItems : PROOF_FALLBACK;
+
+  // Same pattern for the Instagram band.
+  const igItems = toInstagramItems(instagram);
+  const igPosts = igItems.length ? igItems : INSTAGRAM_FALLBACK;
 
   return (
     <ContentProvider content={content}>
@@ -52,7 +59,7 @@ export default async function Home() {
       <TrustStrip />
       <WhatIsIt />
       <Proof items={proof} />
-      <Instagram />
+      <Instagram items={igPosts} />
       <Models />
       <Process />
       <Studio />

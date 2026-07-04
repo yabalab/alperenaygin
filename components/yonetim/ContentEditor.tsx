@@ -5,9 +5,11 @@ import { updateContent, type UpdateContentState } from "@/app/yonetim/actions";
 import { CMS_SECTIONS, type CmsSection } from "@/lib/cms/content";
 import type { MediaRow } from "@/lib/cms/media";
 import type { BeforeAfterRow } from "@/lib/cms/before-after";
+import type { InstagramRow } from "@/lib/cms/instagram";
 import ImageField from "./ImageField";
 import HeroPairField from "./HeroPairField";
 import BeforeAfterManager from "./BeforeAfterManager";
+import InstagramManager from "./InstagramManager";
 
 const initial: UpdateContentState = { ok: false, error: null };
 
@@ -38,10 +40,12 @@ export default function ContentEditor({
   values,
   media,
   beforeAfter,
+  instagram,
 }: {
   values: Record<string, string>;
   media: Record<string, MediaRow>;
   beforeAfter: BeforeAfterRow[];
+  instagram: InstagramRow[];
 }) {
   const [activeId, setActiveId] = useState(CMS_SECTIONS[0].id);
   const active = CMS_SECTIONS.find((s) => s.id === activeId)!;
@@ -77,6 +81,7 @@ export default function ContentEditor({
         </div>
       )}
       {activeId === "kanit" && <BeforeAfterManager items={beforeAfter} />}
+      {activeId === "instagram" && <InstagramManager items={instagram} />}
       {mediaFields.length > 0 && (
         <div className="mt-6 flex flex-col gap-4">
           {mediaFields.map((m) => (
