@@ -15,6 +15,7 @@ import RandevuChip from "@/components/RandevuChip";
 import { getSiteContent } from "@/lib/cms/queries";
 import { getSiteMedia } from "@/lib/cms/media-queries";
 import { ContentProvider } from "@/components/cms/ContentProvider";
+import { MediaProvider } from "@/components/cms/MediaProvider";
 
 // ISR: serve cached HTML, refresh content at most hourly. CMS saves call
 // revalidatePath("/") to push edits live immediately.
@@ -28,6 +29,7 @@ export default async function Home() {
 
   return (
     <ContentProvider content={content}>
+    <MediaProvider media={media}>
     <div className="min-h-svh bg-paper font-body text-ink-deep">
       <h1 className="absolute h-px w-px overflow-hidden whitespace-nowrap [clip-path:inset(50%)]">
         Sakarya Protez Saç — Alperen Aygın · Serdivan Saç Sistemi Uygulaması
@@ -46,12 +48,13 @@ export default async function Home() {
       <Models />
       <Process />
       <Studio />
-      <Master portrait={media.usta ?? null} />
+      <Master />
       <Faq />
       <Contact />
       <Footer />
       <RandevuChip />
     </div>
+    </MediaProvider>
     </ContentProvider>
   );
 }

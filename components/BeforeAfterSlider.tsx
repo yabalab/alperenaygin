@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type ImageLoader } from "next/image";
 import {
   useRef,
   useState,
@@ -24,9 +24,11 @@ type Props = {
   /** Image shown on the right / underneath (the "after" state). */
   afterSrc: string;
   afterAlt: string;
+  afterLoader?: ImageLoader;
   /** Image revealed from the left (the "before" state). */
   beforeSrc: string;
   beforeAlt: string;
+  beforeLoader?: ImageLoader;
   beforeLabel?: string;
   afterLabel?: string;
   showLabels?: boolean;
@@ -38,8 +40,10 @@ type Props = {
 export default function BeforeAfterSlider({
   afterSrc,
   afterAlt,
+  afterLoader,
   beforeSrc,
   beforeAlt,
+  beforeLoader,
   beforeLabel = "ÖNCE",
   afterLabel = "SONRA",
   showLabels = true,
@@ -164,6 +168,7 @@ export default function BeforeAfterSlider({
       {/* AFTER — underneath, full frame */}
       <Image
         src={afterSrc}
+        loader={afterLoader}
         alt={afterAlt}
         fill
         priority
@@ -180,6 +185,7 @@ export default function BeforeAfterSlider({
       >
         <Image
           src={beforeSrc}
+          loader={beforeLoader}
           alt={beforeAlt}
           fill
           priority

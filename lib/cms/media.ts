@@ -30,3 +30,25 @@ export function mediaLoader({
   const size = width <= 400 ? 400 : width <= 800 ? 800 : 1200;
   return mediaSizeUrl(src, size);
 }
+
+/** <Image> props for a `fill` image: media (via loader) or a fallback path. */
+export function mediaFill(media: MediaRow | null, fallbackSrc: string) {
+  return media
+    ? { src: media.storage_path, loader: mediaLoader }
+    : { src: fallbackSrc };
+}
+
+/** <Image> props for a fixed width/height image: media or a fallback. */
+export function mediaFixed(
+  media: MediaRow | null,
+  fallback: { src: string; width: number; height: number }
+) {
+  return media
+    ? {
+        loader: mediaLoader,
+        src: media.storage_path,
+        width: media.genislik ?? 1200,
+        height: media.yukseklik ?? 1200,
+      }
+    : fallback;
+}

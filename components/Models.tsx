@@ -5,10 +5,13 @@ import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
 import { useT } from "./cms/ContentProvider";
+import { useMedia } from "./cms/MediaProvider";
+import { mediaFixed } from "@/lib/cms/media";
 
 const CARDS = [
   {
     num: "01",
+    alan: "model_1",
     titleKey: "modeller.m1_title",
     img: "/images/model-ferah-tarama.png",
     alt: "Ferah Tarama modeli — french lace taban yapısı",
@@ -16,6 +19,7 @@ const CARDS = [
   },
   {
     num: "02",
+    alan: "model_2",
     titleKey: "modeller.m2_title",
     img: "/images/model-lux-protez.png",
     alt: "Lux Protez modeli — nanofilament tül taban",
@@ -23,6 +27,7 @@ const CARDS = [
   },
   {
     num: "03",
+    alan: "model_3",
     titleKey: "modeller.m3_title",
     img: "/images/model-sil-bastan.png",
     alt: "Sil Baştan modeli — full kalıp taban",
@@ -32,6 +37,11 @@ const CARDS = [
 
 export default function Models() {
   const t = useT();
+  const mediaByAlan: Record<string, ReturnType<typeof useMedia>> = {
+    model_1: useMedia("model_1"),
+    model_2: useMedia("model_2"),
+    model_3: useMedia("model_3"),
+  };
   return (
     <section
       id="modeller"
@@ -61,10 +71,12 @@ export default function Models() {
             >
               <div className="flex items-center justify-center bg-card-cream px-10 pb-[34px] pt-10">
                 <Image
-                  src={c.img}
+                  {...mediaFixed(mediaByAlan[c.alan], {
+                    src: c.img,
+                    width: 224,
+                    height: 224,
+                  })}
                   alt={c.alt}
-                  width={224}
-                  height={224}
                   className="block aspect-square w-full max-w-[224px] object-contain mix-blend-multiply"
                 />
               </div>

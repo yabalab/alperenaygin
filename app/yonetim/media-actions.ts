@@ -8,10 +8,17 @@ import { MEDIA_SIZES } from "@/lib/cms/media";
 
 export type MediaActionState = { ok: boolean; error: string | null };
 
-// Editable image slots. This turn ships only the Usta portrait pilot; later
-// turns add more alanlar on the same engine.
+// Editable single-image slots. Ratios come from the real site layout.
+// (Liste içerikleri — before/after, instagram — sonraki turda.)
 const ALLOWED: Record<string, { oran: string }> = {
-  usta: { oran: "3:4" },
+  usta: { oran: "3:4" }, // Usta portresi
+  hero_kel: { oran: "2:3" }, // Hero before/after — öncesi
+  hero_sacli: { oran: "2:3" }, // Hero before/after — sonrası (aynı oran → hizalı)
+  atolye_lobi: { oran: "16:10" },
+  atolye_oda: { oran: "16:10" },
+  model_1: { oran: "1:1" },
+  model_2: { oran: "1:1" },
+  model_3: { oran: "1:1" },
 };
 
 const BUCKET = "site-media";

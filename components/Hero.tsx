@@ -3,6 +3,8 @@
 import { motion, type Variants } from "framer-motion";
 import BeforeAfterSlider from "./BeforeAfterSlider";
 import { useT, MultiLine } from "./cms/ContentProvider";
+import { useMedia } from "./cms/MediaProvider";
+import { mediaFill } from "@/lib/cms/media";
 
 const WA = "https://wa.me/905354838997";
 const PHONE = "+905354838997";
@@ -20,15 +22,19 @@ const reveal: Variants = {
 
 export default function Hero() {
   const t = useT();
+  const sacli = mediaFill(useMedia("hero_sacli"), "/images/salon-sacli.png");
+  const kel = mediaFill(useMedia("hero_kel"), "/images/salon-kel.png");
   return (
     <section
       id="hero"
       className="relative flex flex-col overflow-hidden desk:grid desk:max-h-[960px] desk:min-h-[calc(100svh-64px)] desk:grid-cols-2"
     >
       <BeforeAfterSlider
-        afterSrc="/images/salon-sacli.png"
+        afterSrc={sacli.src}
+        afterLoader={sacli.loader}
         afterAlt="Saç sistemi uygulanmış hali — aynı adam, saçlı"
-        beforeSrc="/images/salon-kel.png"
+        beforeSrc={kel.src}
+        beforeLoader={kel.loader}
         beforeAlt="Saç sistemi öncesi — kel hali"
         className="aspect-[1/1.02] desk:aspect-auto desk:h-full desk:min-h-[620px]"
       />

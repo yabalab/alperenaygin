@@ -5,10 +5,11 @@ import { updateContent, type UpdateContentState } from "@/app/yonetim/actions";
 import { CMS_SECTIONS, type CmsSection } from "@/lib/cms/content";
 import type { MediaRow } from "@/lib/cms/media";
 import ImageField from "./ImageField";
+import HeroPairField from "./HeroPairField";
 
 const initial: UpdateContentState = { ok: false, error: null };
 
-// Per-section image slots (media). Pilot: only the Usta portrait.
+// Per-section single-image slots. Hero is special (before/after pair — see below).
 type MediaFieldDef = {
   alan: string;
   label: string;
@@ -18,13 +19,16 @@ type MediaFieldDef = {
 };
 const MEDIA_FIELDS: Record<string, MediaFieldDef[]> = {
   usta: [
-    {
-      alan: "usta",
-      label: "Portre",
-      aspect: 3 / 4,
-      oran: "3:4",
-      fallbackSrc: "/images/alperen-portre.png",
-    },
+    { alan: "usta", label: "Portre", aspect: 3 / 4, oran: "3:4", fallbackSrc: "/images/alperen-portre.png" },
+  ],
+  atolye: [
+    { alan: "atolye_lobi", label: "Lobi görseli", aspect: 16 / 10, oran: "16:10", fallbackSrc: "/images/atolye-lobi.png" },
+    { alan: "atolye_oda", label: "Oda görseli", aspect: 16 / 10, oran: "16:10", fallbackSrc: "/images/atolye-oda.png" },
+  ],
+  modeller: [
+    { alan: "model_1", label: "1. model görseli (Ferah Tarama)", aspect: 1, oran: "1:1", fallbackSrc: "/images/model-ferah-tarama.png" },
+    { alan: "model_2", label: "2. model görseli (Lux Protez)", aspect: 1, oran: "1:1", fallbackSrc: "/images/model-lux-protez.png" },
+    { alan: "model_3", label: "3. model görseli (Sil Baştan)", aspect: 1, oran: "1:1", fallbackSrc: "/images/model-sil-bastan.png" },
   ],
 };
 
@@ -60,6 +64,14 @@ export default function ContentEditor({
       </div>
 
       {/* Image slots for this section (media), above the text form. */}
+      {activeId === "hero" && (
+        <div className="mt-6">
+          <HeroPairField
+            kel={media.hero_kel ?? null}
+            sacli={media.hero_sacli ?? null}
+          />
+        </div>
+      )}
       {mediaFields.length > 0 && (
         <div className="mt-6 flex flex-col gap-4">
           {mediaFields.map((m) => (

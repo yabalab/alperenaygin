@@ -7,10 +7,12 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
 import { useT } from "./cms/ContentProvider";
-import { mediaLoader, type MediaRow } from "@/lib/cms/media";
+import { useMedia } from "./cms/MediaProvider";
+import { mediaFixed } from "@/lib/cms/media";
 
-export default function Master({ portrait }: { portrait?: MediaRow | null }) {
+export default function Master() {
   const t = useT();
+  const portrait = useMedia("usta");
   const sectionRef = useRef<HTMLElement>(null);
   const portraitRef = useRef<HTMLImageElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -77,18 +79,11 @@ export default function Master({ portrait }: { portrait?: MediaRow | null }) {
                 "linear-gradient(to bottom,#000 80%,transparent 100%)",
               maskImage: "linear-gradient(to bottom,#000 80%,transparent 100%)",
             }}
-            {...(portrait
-              ? {
-                  loader: mediaLoader,
-                  src: portrait.storage_path,
-                  width: portrait.genislik ?? 1200,
-                  height: portrait.yukseklik ?? 1600,
-                }
-              : {
-                  src: "/images/alperen-portre.png",
-                  width: 1024,
-                  height: 1536,
-                })}
+            {...mediaFixed(portrait, {
+              src: "/images/alperen-portre.png",
+              width: 1024,
+              height: 1536,
+            })}
           />
         </motion.div>
 

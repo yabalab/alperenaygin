@@ -5,25 +5,26 @@ import { motion } from "framer-motion";
 import { revealProps } from "./reveal";
 import MaskReveal from "./MaskReveal";
 import { useT } from "./cms/ContentProvider";
+import { useMedia } from "./cms/MediaProvider";
+import { mediaFill } from "@/lib/cms/media";
 
 const POINTS = [
   { num: "01", titleKey: "atolye.p1_title", descKey: "atolye.p1_desc" },
   { num: "02", titleKey: "atolye.p2_title", descKey: "atolye.p2_desc" },
 ];
 
-const PHOTOS = [
-  {
-    src: "/images/atolye-lobi.png",
-    alt: "Yeni atölyenin ferah lobisi — kemerli nişler ve altın çerçeveli ayna",
-  },
-  {
-    src: "/images/atolye-oda.png",
-    alt: "Kapalı özel uygulama odası — loş ve sakin istasyon",
-  },
-];
-
 export default function Studio() {
   const t = useT();
+  const PHOTOS = [
+    {
+      ...mediaFill(useMedia("atolye_lobi"), "/images/atolye-lobi.png"),
+      alt: "Yeni atölyenin ferah lobisi — kemerli nişler ve altın çerçeveli ayna",
+    },
+    {
+      ...mediaFill(useMedia("atolye_oda"), "/images/atolye-oda.png"),
+      alt: "Kapalı özel uygulama odası — loş ve sakin istasyon",
+    },
+  ];
   return (
     <section
       id="atolye"
@@ -71,13 +72,14 @@ export default function Studio() {
 
         {/* Right: photos */}
         <motion.div {...revealProps} className="flex flex-col gap-[18px]">
-          {PHOTOS.map((photo) => (
+          {PHOTOS.map((photo, i) => (
             <div
-              key={photo.src}
+              key={i}
               className="relative aspect-[16/10] w-full overflow-hidden rounded-[6px] border border-[rgba(244,239,230,0.12)]"
             >
               <Image
                 src={photo.src}
+                loader={photo.loader}
                 alt={photo.alt}
                 fill
                 sizes="(min-width: 960px) 50vw, 100vw"
